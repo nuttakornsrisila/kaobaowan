@@ -73,10 +73,18 @@
       </div>
     </section>
 
-    <!-- Section สั่งอาหาร (เหมือนหน้า Staff) -->
+    <!-- Section สั่งอาหาร + โปรโมชั่น -->
     <section id="orderSection" class="hidden">
       <h2 class="text-2xl font-semibold mb-4">สั่งอาหาร</h2>
-      <div id="orderMenuContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+      <!-- โปรโมชั่น -->
+      <section id="promoSection" class="mb-6">
+        <h3 class="text-xl font-semibold mb-2">🔥 โปรโมชั่น</h3>
+        <div id="promoContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- เมนูปกติ -->
+      <div id="orderMenuContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6"></div>
 
       <!-- Order Summary -->
       <div id="orderSummary" class="fixed bottom-0 left-64 w-[calc(100%-16rem)] bg-white shadow-md border-t border-gray-200 p-4 hidden">
@@ -93,28 +101,28 @@
   </main>
 
   <script>
-    // โหลดเมนูจาก localStorage หรือใช้เมนูเริ่มต้น
-    let menuItems = JSON.parse(localStorage.getItem("menuData")) || [
-      {id:1,name:"ไก่ชิ้น",price:15,img:"https://cdn-icons-png.flaticon.com/512/2921/2921822.png"},
-      {id:2,name:"ข้าวผัดกุ้ง",price:50,img:"https://cdn-icons-png.flaticon.com/512/2921/2921825.png"},
-      {id:3,name:"ผัดไทยกุ้งสด",price:55,img:"https://cdn-icons-png.flaticon.com/512/2921/2921819.png"}
+    // ---------- เมนูปกติ ----------
+    let menuItems = [
+      { id: 1, name: "ไก่ชิ้น", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+      { id: 2, name: "น้องไก่ใหญ่", price: 29, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+      { id: 3, name: "ไก่ไร้กระดูก", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+      { id: 4, name: "สะโพกไก่", price: 39, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" }
     ];
 
     let allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
     const menuTable = document.getElementById("menuTable");
     const addMenuForm = document.getElementById("addMenuForm");
-
     const orderMenuContainer = document.getElementById("orderMenuContainer");
     const orderSummary = document.getElementById("orderSummary");
     const orderList = document.getElementById("orderList");
     const totalDisplay = document.getElementById("total");
     let order = [];
 
-    /* ---------- Admin: จัดการเมนู ---------- */
-    function renderTable() {
-      menuTable.innerHTML = "";
+    // ---------- Admin: จัดการเมนู ----------
+    function renderTable(){
+      menuTable.innerHTML="";
       menuItems.forEach((item,index)=>{
-        menuTable.innerHTML += `
+        menuTable.innerHTML+=`
           <tr class="text-center">
             <td class="border p-2"><img src="${item.img}" class="w-16 h-16 mx-auto"></td>
             <td class="border p-2">${item.name}</td>
@@ -132,28 +140,29 @@
 
     addMenuForm.addEventListener("submit", e=>{
       e.preventDefault();
-      const name = document.getElementById("menuName").value.trim();
-      const price = parseFloat(document.getElementById("menuPrice").value);
-      const img = document.getElementById("menuImage").value.trim();
-      if(!name || !price || !img) return alert("กรุณากรอกข้อมูลให้ครบ");
-
+      const name=document.getElementById("menuName").value.trim();
+      const price=parseFloat(document.getElementById("menuPrice").value);
+      const img=document.getElementById("menuImage").value.trim();
+      if(!name||!price||!img) return alert("กรุณากรอกข้อมูลให้ครบ");
       menuItems.push({id:Date.now(),name,price,img});
       renderTable();
       saveMenu();
       renderOrderMenu();
+      renderPromos();
       addMenuForm.reset();
     });
 
     function editMenu(index){
-      const item = menuItems[index];
-      const newName = prompt("ชื่อเมนูใหม่:", item.name);
-      const newPrice = prompt("ราคาใหม่:", item.price);
-      if(newName && newPrice){
-        item.name = newName;
-        item.price = parseFloat(newPrice);
+      const item=menuItems[index];
+      const newName=prompt("ชื่อเมนูใหม่:",item.name);
+      const newPrice=prompt("ราคาใหม่:",item.price);
+      if(newName&&newPrice){
+        item.name=newName;
+        item.price=parseFloat(newPrice);
         renderTable();
         saveMenu();
         renderOrderMenu();
+        renderPromos();
       }
     }
 
@@ -163,16 +172,17 @@
         renderTable();
         saveMenu();
         renderOrderMenu();
+        renderPromos();
       }
     }
 
     function saveMenu(){
-      localStorage.setItem("menuData", JSON.stringify(menuItems));
+      localStorage.setItem("menuData",JSON.stringify(menuItems));
     }
 
-    /* ---------- Staff-like: สั่งอาหาร ---------- */
+    // ---------- สั่งอาหาร (Staff-like) ----------
     function renderOrderMenu(){
-      orderMenuContainer.innerHTML = "";
+      orderMenuContainer.innerHTML="";
       if(menuItems.length===0){
         orderMenuContainer.innerHTML=`<p class="text-center text-gray-500 col-span-full">❌ ยังไม่มีเมนูในระบบ</p>`;
         return;
@@ -180,7 +190,7 @@
       menuItems.forEach(item=>{
         const card=document.createElement("div");
         card.className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition";
-        card.innerHTML = `
+        card.innerHTML=`
           <img src="${item.img}" alt="${item.name}" class="w-24 h-24 mb-3 object-cover rounded">
           <h2 class="font-semibold">${item.name}</h2>
           <p class="text-gray-600 mb-3">${item.price} บาท</p>
@@ -190,31 +200,29 @@
       });
     }
 
-    renderOrderMenu();
-
     function addToOrder(id){
-      const item = menuItems.find(i=>i.id===id);
-      const existing = order.find(o=>o.id===id);
+      const item=menuItems.find(i=>i.id===id);
+      const existing=order.find(o=>o.id===id);
       if(existing) existing.qty++; else order.push({...item,qty:1});
       updateOrderSummary();
     }
 
     function updateOrderSummary(){
-      orderList.innerHTML = "";
-      let total = 0;
+      orderList.innerHTML="";
+      let total=0;
       order.forEach(item=>{
         total+=item.price*item.qty;
-        orderList.innerHTML += `<li class="flex justify-between items-center mb-1">${item.name} x${item.qty} <button onclick="removeItem(${item.id})" class="text-red-500 ml-2">✕</button></li>`;
+        orderList.innerHTML+=`<li class="flex justify-between items-center mb-1">${item.name} x${item.qty} <button onclick="removeItem(${item.id})" class="text-red-500 ml-2">✕</button></li>`;
       });
-      totalDisplay.textContent = total;
+      totalDisplay.textContent=total;
       orderSummary.classList.toggle("hidden",order.length===0);
     }
 
-    function removeItem(id){ order = order.filter(i=>i.id!==id); updateOrderSummary(); }
+    function removeItem(id){ order=order.filter(i=>i.id!==id); updateOrderSummary(); }
 
     function submitOrder(){
       if(order.length===0) return alert("ยังไม่มีรายการอาหาร");
-      const orderData = { timestamp:new Date().toLocaleString(), items:order, total:totalDisplay.textContent };
+      const orderData={timestamp:new Date().toLocaleString(), items:order, total:totalDisplay.textContent};
       allOrders.push(orderData);
       localStorage.setItem("allOrders",JSON.stringify(allOrders));
       alert("ส่งออเดอร์เรียบร้อย ✅");
@@ -224,16 +232,58 @@
       updateReport();
     }
 
-    /* ---------- รายรับรายจ่าย ---------- */
-    function showSection(section){
-      document.getElementById("menuSection").classList.add("hidden");
-      document.getElementById("orderSection").classList.add("hidden");
-      document.getElementById("reportSection").classList.add("hidden");
-      if(section==="menu") document.getElementById("menuSection").classList.remove("hidden");
-      if(section==="order") document.getElementById("orderSection").classList.remove("hidden");
-      if(section==="report") document.getElementById("reportSection").classList.remove("hidden");
+    // ---------- โปรโมชั่น ----------
+    const promoItems = [
+      {id:101,name:"โปรไก่ชิ้น", options:[
+        {label:"3 ชิ้น - 39 บาท", price:39, qty:3},
+        {label:"6 ชิ้น - 79 บาท", price:79, qty:6},
+        {label:"10 ชิ้น - 129 บาท", price:129, qty:10},
+      ]},
+      {id:102,name:"โปรน่องไก่ใหญ่", options:[
+        {label:"3 ชิ้น - 79 บาท", price:79, qty:3},
+        {label:"6 ชิ้น - 159 บาท", price:159, qty:6},
+      ]},
+      {id:103,name:"โปรสะโพกไก่", options:[
+        {label:"3 ชิ้น - 99 บาท", price:99, qty:3},
+      ]},
+      {id:104,name:"โปรไก่ไร้กระดูก", options:[
+        {label:"5 ชิ้น - 59 บาท", price:59, qty:5},
+        {label:"10 ชิ้น - 99 บาท", price:99, qty:10},
+      ]},
+      {id:105,name:"โปรรวมพิเศษ", options:[
+        {label:"สะโพก 1 + น่องใหญ่ 2 = 89 บาท", price:89, qty:3},
+      ]}
+    ];
+    const promoContainer=document.getElementById("promoContainer");
+
+    function renderPromos(){
+      promoContainer.innerHTML="";
+      promoItems.forEach(promo=>{
+        const card=document.createElement("div");
+        card.className="bg-yellow-200 p-4 rounded-lg shadow flex flex-col gap-2";
+        card.innerHTML=`<h3 class="font-semibold text-lg">${promo.name}</h3>`;
+        promo.options.forEach(opt=>{
+          const btn=document.createElement("button");
+          btn.className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600";
+          btn.textContent=opt.label;
+          btn.onclick=()=> addPromoToOrder(promo.name,opt.price,opt.qty);
+          card.appendChild(btn);
+        });
+        promoContainer.appendChild(card);
+      });
     }
 
+    function addPromoToOrder(name,price,qty){
+      const existing=order.find(o=>o.name===name && o.price===price);
+      if(existing) existing.qty+=qty;
+      else order.push({id:Date.now(),name,price,qty});
+      updateOrderSummary();
+    }
+
+    renderOrderMenu();
+    renderPromos();
+
+    // ---------- รายรับรายจ่าย ----------
     function updateReport(){
       const reportSection=document.getElementById("reportSection");
       reportSection.innerHTML=`<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>`;
@@ -252,7 +302,7 @@
           orderHtml+=`<li>${item.name} x${item.qty} = ${item.price*item.qty} บาท</li>`;
           totalIncome+=item.price*item.qty;
           if(menuSummary[item.name]) menuSummary[item.name].qty+=item.qty;
-          else menuSummary[item.name]={price:item.price, qty:item.qty};
+          else menuSummary[item.name]={price:item.price,qty:item.qty};
         });
         orderHtml+=`</ul></div>`;
         container.innerHTML+=orderHtml;
@@ -269,6 +319,7 @@
       reportSection.innerHTML+=`<p class="mt-4 font-bold text-lg">ยอดรวมทั้งหมด: ${totalIncome} บาท</p>`;
     }
 
+    // ---------- Sidebar + Logout ----------
     function logout(){ window.location.href="index.html"; }
 
     function toggleSidebar(){
@@ -276,7 +327,6 @@
       sidebar.classList.toggle("sidebar-collapsed");
       sidebar.classList.toggle("w-16");
       sidebar.classList.toggle("w-64");
-
       if(sidebar.classList.contains("w-16")){
         orderSummary.style.left="4rem";
         orderSummary.style.width="calc(100% - 4rem)";
@@ -286,8 +336,16 @@
       }
     }
 
+    function showSection(section){
+      document.getElementById("menuSection").classList.add("hidden");
+      document.getElementById("orderSection").classList.add("hidden");
+      document.getElementById("reportSection").classList.add("hidden");
+      if(section==="menu") document.getElementById("menuSection").classList.remove("hidden");
+      if(section==="order") document.getElementById("orderSection").classList.remove("hidden");
+      if(section==="report") document.getElementById("reportSection").classList.remove("hidden");
+    }
+
     updateReport();
   </script>
-
 </body>
 </html>
