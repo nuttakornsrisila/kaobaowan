@@ -97,7 +97,7 @@
   </main>
 
   <script>
-    // ---------- เมนูปกติ ----------
+    // ---------- ข้อมูลเมนู ----------
     let menuItems = [
       { id: 1, name: "น่องไก่เล็ก", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
       { id: 2, name: "ปีกไก่", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
@@ -105,8 +105,6 @@
       { id: 4, name: "ไก่ไร้กระดูก", price: 12, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
       { id: 5, name: "สะโพกไก่", price: 39, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
       { id: 6, name: "ข้าวหน้าไก่ทอดเก๊า", price: 49, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
-      { id: 6, name: "ข้าวไก่ทอดเก๊า + ซอสเลือกได้", price: 59, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
-      // --- เพิ่มเฟรนช์ฟรายส์ & ฮอทดอก ---
       {id:201, name:"เฟรนช์ฟรายส์ S", price:29, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"S"},
       {id:202, name:"เฟรนช์ฟรายส์ M", price:39, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"M"},
       {id:203, name:"เฟรนช์ฟรายส์ L", price:49, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"L"},
@@ -169,7 +167,7 @@
 
     function saveMenu(){ localStorage.setItem("menuData",JSON.stringify(menuItems)); }
 
-    // ---------- สั่งอาหาร (Staff-like) ----------
+    // ---------- สั่งอาหาร ----------
     function renderOrderMenu(){
       orderMenuContainer.innerHTML="";
       if(menuItems.length===0){
@@ -226,32 +224,6 @@
         {label:"3 ชิ้น = 39 บาท", price:39, qty:3},
         {label:"6 ชิ้น = 79 บาท", price:79, qty:6},
         {label:"10 ชิ้น = 129 บาท", price:129, qty:10},
-      ]},
-      {id:102,name:"โปรน่องไก่ใหญ่", options:[
-        {label:"3 ชิ้น = 79 บาท", price:79, qty:3},
-        {label:"6 ชิ้น = 159 บาท", price:159, qty:6},
-      ]},
-      {id:103,name:"โปรสะโพกไก่", options:[
-        {label:"3 ชิ้น = 99 บาท", price:99, qty:3},
-      ]},
-      {id:104,name:"โปรไก่ไร้กระดูก", options:[
-        {label:"5 ชิ้น = 59 บาท", price:59, qty:5},
-        {label:"10 ชิ้น = 99 บาท", price:99, qty:10},
-      ]},
-      {id:105,name:"โปรรวมพิเศษ", options:[
-        {label:"สะโพก 1 + น่องใหญ่ 2 = 89 บาท", price:89, qty:3},
-         {label:"เฟรนช์ฟรายส์ M + ไก่ทอด (ชิ้นละ 15) 3 ชิ้น = 69 บาท", price:69, qty:3},
-      ]},
-      {id:106,name:"เซตสุดคุ้ม", options:[
-        {label:"ทุกชิ้นส่วน อย่างละ 1  = 109 บาท", price:109, qty:6},
-        {label:"ทุกชิ้นส่วน อย่างละ 2  = 209 บาท", price:209, qty:12},
-        {label:"ทุกชิ้นส่วน อย่างละ 3  = 309 บาท", price:309, qty:18},
-      ]},
-      // --- โปรโมชั่นเฟรนช์ฟรายส์ ---
-      {id:201, name:"โปรเฟรนช์ฟรายส์ & ฮอทดอก", options:[
-        {label:"เฟรนช์ฟรายส์+ฮอทดอก S = 29", price:29, qty:1, details:"S"},
-        {label:"เฟรนช์ฟรายส์+ฮอทดอก M = 39", price:39, qty:1, details:"M"},
-        {label:"เฟรนช์ฟรายส์+ฮอทดอก L = 49", price:49, qty:1, details:"L"},
       ]}
     ];
     const promoContainer=document.getElementById("promoContainer");
@@ -283,10 +255,15 @@
     renderOrderMenu(); renderPromos();
 
     // ---------- รายรับรายจ่าย ----------
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw4nTWrZFatW2gHgh6_d8MAjNRvyTGcmtmad1SYGeygIKGiRg7U_3m7ytdPx8-pG9GwdA/exec"; // <-- ใส่ URL Web App ของ Google Sheet
+
     function updateReport(){
       const reportSection=document.getElementById("reportSection");
       reportSection.innerHTML=`<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>`;
-      if(allOrders.length===0){ reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; return; }
+      if(allOrders.length===0){ 
+        reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; 
+        return; 
+      }
       let totalIncome=0;
       const container=document.createElement("div");
       container.className="bg-white p-4 rounded shadow space-y-4";
@@ -313,6 +290,28 @@
       container.innerHTML+=summaryHtml;
       reportSection.appendChild(container);
       reportSection.innerHTML+=`<p class="mt-4 font-bold text-lg">ยอดรวมทั้งหมด: ${totalIncome} บาท</p>`;
+
+      // ปุ่มส่ง Google Sheet
+      const sendBtn = document.createElement("button");
+      sendBtn.textContent = "ส่งเข้า Google Sheet";
+      sendBtn.className="mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700";
+      sendBtn.onclick = sendToGoogleSheet;
+      reportSection.appendChild(sendBtn);
+    }
+
+    function sendToGoogleSheet() {
+      if(allOrders.length === 0) return alert("ยังไม่มีออเดอร์ให้ส่ง");
+
+      fetch(webAppUrl, {
+        method: "POST",
+        body: JSON.stringify({ items: allOrders.map(o => o.items).flat(), timestamp: new Date().toLocaleString() }),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(response => response.text())
+      .then(res => {
+        alert("ส่งข้อมูลเรียบร้อย ✅\n" + res);
+      })
+      .catch(err => alert("เกิดข้อผิดพลาด: " + err));
     }
 
     // ---------- Sidebar + Logout ----------
