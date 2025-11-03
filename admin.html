@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หน้า Admin - ระบบสั่งอาหาร</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+  <!-- Navbar -->
+  <nav class="bg-indigo-700 text-white p-4 flex justify-between items-center">
+    <h1 class="text-xl font-semibold">👨‍💼 หน้าผู้ดูแลระบบ (Admin)</h1>
+    <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded-lg hover:bg-red-600">ออกจากระบบ</button>
+  </nav>
+
+  <!-- Content -->
+  <div class="max-w-5xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-4">📋 รายการเมนูอาหาร</h2>
+
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white rounded-xl shadow-md">
+      <table class="min-w-full border-collapse">
+        <thead class="bg-indigo-100">
+          <tr>
+            <th class="p-3 border">รูปภาพ</th>
+            <th class="p-3 border">ชื่อเมนู</th>
+            <th class="p-3 border">ราคา (บาท)</th>
+            <th class="p-3 border">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="menuTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Add menu form -->
+    <div class="mt-6 bg-white shadow-md rounded-xl p-4">
+      <h3 class="text-lg font-semibold mb-3">➕ เพิ่มเมนูใหม่</h3>
+      <form id="addMenuForm" class="grid md:grid-cols-3 gap-3">
+        <input type="text" id="menuName" placeholder="ชื่อเมนู" class="border p-2 rounded" required>
+        <input type="number" id="menuPrice" placeholder="ราคา" class="border p-2 rounded" required>
+        <input type="text" id="menuImage" placeholder="ลิงก์รูปภาพ (URL)" class="border p-2 rounded" required>
+        <button class="col-span-3 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">เพิ่มเมนู</button>
+      </form>
+    </div>
+
+    <!-- Export Button -->
+    <div class="mt-6 text-center">
+      <a href="https://docs.google.com/spreadsheets" target="_blank" class="bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600">📊 ดูรายงานรายรับรายจ่าย (Google Sheet)</a>
+    </div>
+  </div>
+
+  <script>
+    // โหลดข้อมูลเมนูจาก LocalStorage (ถ้ามี)
+    let menuItems = JSON.parse(localStorage.getItem("menuData")) || [
+      { id: 1, name: "ข้าวกระเพราหมู", price: 45, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+      { id: 2, name: "ข้าวผัดกุ้ง", price: 50, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+      { id: 3, name: "ผัดไทยกุ้งสด", price: 55, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" }
+    ];
+
+    const tableBody = document.getElementById("menuTable");
+    const addMenuForm = document.getElementById("addMenuForm");
+
+    // ฟังก์ชันบันทึกเมนูลง LocalStorage
+    function saveToLocal() {
+      localStorage.setItem("menuData", JSON.stringify(menuItems));
+    }
+
+    // แสดงข้อมูลในตาราง
+    function renderTable() {
+      tableBody.innerHTML = "";
+      menuItems.forEach((item, index) => {
+        tableBody.innerHTML += `
+          <tr class="text-center">
+            <td class="border p-2"><img src="${item.img}" class="w-16 h-16 mx-auto"></td>
+            <td class="border p-2">${item.name}</td>
+            <td class="border p-2">${item.price}</td>
+            <td class="border p-2">
+              <button onclick="editMenu(${index})" class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 mr-2">แก้ไข</button>
+              <button onclick="deleteMenu(${index})" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">ลบ</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    renderTable();
+
+    // เพิ่มเมนูใหม่
+    addMenuForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("menuName").value.trim();
+      const price = parseFloat(document.getElementById("menuPrice").value);
+      const img = document.getElementById("menuImage").value.trim();
+      if (!name || !price || !img) return alert("กรุณากรอกข้อมูลให้ครบ");
+
+      menuItems.push({ id: Date.now(), name, price, img });
+      renderTable();
+      saveToLocal(); // บันทึกทุกครั้งหลังเพิ่ม
+      addMenuForm.reset();
+    });
+
+    // แก้ไขเมนู
+    function editMenu(index) {
+      const item = menuItems[index];
+      const newName = prompt("ชื่อเมนูใหม่:", item.name);
+      const newPrice = prompt("ราคาใหม่:", item.price);
+      if (newName && newPrice) {
+        item.name = newName;
+        item.price = parseFloat(newPrice);
+        renderTable();
+        saveToLocal(); // บันทึกทุกครั้งหลังแก้ไข
+      }
+    }
+
+    // ลบเมนู
+    function deleteMenu(index) {
+      if (confirm("ต้องการลบเมนูนี้ใช่ไหม?")) {
+        menuItems.splice(index, 1);
+        renderTable();
+        saveToLocal(); // บันทึกทุกครั้งหลังลบ
+      }
+    }
+
+    // ออกจากระบบ
+    function logout() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

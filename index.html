@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบสั่งอาหารพนักงาน</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-red-900 flex items-center justify-center h-screen">
+
+  <div class="bg-yellow-500 shadow-lg rounded-2xl p-8 w-96 text-center">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">เข้าสู่ระบบสั่งอาหาร</h1>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="ชื่อผู้ใช้" class="w-full p-3 border rounded mb-3 focus:ring focus:ring-indigo-200" required>
+      <input type="password" id="password" placeholder="รหัสผ่าน" class="w-full p-3 border rounded mb-3 focus:ring focus:ring-indigo-200" required>
+      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">เข้าสู่ระบบ</button>
+    </form>
+    <p id="message" class="mt-3 text-red-500 hidden"></p>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const message = document.getElementById('message');
+
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      // ตัวอย่างบัญชีผู้ใช้
+      if (username === "admin" && password === "1234") {
+        window.location.href = "admin.html";
+      } else if (username === "staff" && password === "1234") {
+        window.location.href = "staff.html";
+      } else {
+        message.textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+        message.classList.remove('hidden');
+      }
+    });
+  </script>
+
+</body>
+</html>
