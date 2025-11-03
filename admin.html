@@ -53,9 +53,10 @@
   <script>
     // โหลดข้อมูลเมนูจาก LocalStorage (ถ้ามี)
     let menuItems = JSON.parse(localStorage.getItem("menuData")) || [
-      { id: 1, name: "ข้าวกระเพราหมู", price: 45, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+      { id: 1, name: "ไก่ชิ้น", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
       { id: 2, name: "ข้าวผัดกุ้ง", price: 50, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
       { id: 3, name: "ผัดไทยกุ้งสด", price: 55, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" }
+      
     ];
 
     const tableBody = document.getElementById("menuTable");
