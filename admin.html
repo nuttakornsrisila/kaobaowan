@@ -69,20 +69,17 @@
       </div>
     </section>
 
-    <!-- Section สั่งอาหาร + โปรโมชั่น -->
+    <!-- Section สั่งอาหาร -->
     <section id="orderSection" class="hidden">
       <h2 class="text-2xl font-semibold mb-4">สั่งอาหาร</h2>
 
-      <!-- โปรโมชั่น -->
       <section id="promoSection" class="mb-6">
         <h3 class="text-xl font-semibold mb-2">🔥 โปรโมชั่น</h3>
         <div id="promoContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4"></div>
       </section>
 
-      <!-- เมนูปกติ -->
       <div id="orderMenuContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6"></div>
 
-      <!-- Order Summary -->
       <div id="orderSummary" class="fixed bottom-0 left-64 w-[calc(100%-16rem)] bg-white shadow-md border-t border-gray-200 p-4 hidden">
         <h2 class="text-lg font-semibold mb-2">🧾 สรุปออเดอร์</h2>
         <ul id="orderList" class="text-gray-700 mb-2"></ul>
@@ -97,22 +94,12 @@
   </main>
 
   <script>
-    // ---------- ข้อมูลเมนู ----------
-    let menuItems = [
+    // ---------- เมนู ----------
+    let menuItems = JSON.parse(localStorage.getItem("menuData")) || [
       { id: 1, name: "น่องไก่เล็ก", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
       { id: 2, name: "ปีกไก่", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
-      { id: 3, name: "น่องไก่ใหญ่", price: 29, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
-      { id: 4, name: "ไก่ไร้กระดูก", price: 12, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
-      { id: 5, name: "สะโพกไก่", price: 39, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
-      { id: 6, name: "ข้าวหน้าไก่ทอดเก๊า", price: 49, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
-      {id:201, name:"เฟรนช์ฟรายส์ S", price:29, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"S"},
-      {id:202, name:"เฟรนช์ฟรายส์ M", price:39, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"M"},
-      {id:203, name:"เฟรนช์ฟรายส์ L", price:49, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"L"},
-      {id:204, name:"ฮอทดอก S", price:20, img:"https://cdn-icons-png.flaticon.com/512/1046/1046785.png", size:"S"},
-      {id:205, name:"ฮอทดอก M", price:30, img:"https://cdn-icons-png.flaticon.com/512/1046/1046785.png", size:"M"},
-      {id:206, name:"ฮอทดอก L", price:40, img:"https://cdn-icons-png.flaticon.com/512/1046/1046785.png", size:"L"}
+      { id: 3, name: "น่องไก่ใหญ่", price: 29, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" }
     ];
-
     let allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
     const menuTable = document.getElementById("menuTable");
     const addMenuForm = document.getElementById("addMenuForm");
@@ -122,11 +109,10 @@
     const totalDisplay = document.getElementById("total");
     let order = [];
 
-    // ---------- Admin: จัดการเมนู ----------
-    function renderTable(){
-      menuTable.innerHTML="";
-      menuItems.forEach((item,index)=>{
-        menuTable.innerHTML+=`
+    function renderTable() {
+      menuTable.innerHTML = "";
+      menuItems.forEach((item, index) => {
+        menuTable.innerHTML += `
           <tr class="text-center">
             <td class="border p-2"><img src="${item.img}" class="w-16 h-16 mx-auto"></td>
             <td class="border p-2">${item.name}</td>
@@ -141,45 +127,50 @@
     }
     renderTable();
 
-    addMenuForm.addEventListener("submit", e=>{
+    addMenuForm.addEventListener("submit", e => {
       e.preventDefault();
-      const name=document.getElementById("menuName").value.trim();
-      const price=parseFloat(document.getElementById("menuPrice").value);
-      const img=document.getElementById("menuImage").value.trim();
-      if(!name||!price||!img) return alert("กรุณากรอกข้อมูลให้ครบ");
-      menuItems.push({id:Date.now(),name,price,img});
-      renderTable(); saveMenu(); renderOrderMenu(); renderPromos(); addMenuForm.reset();
+      const name = document.getElementById("menuName").value.trim();
+      const price = parseFloat(document.getElementById("menuPrice").value);
+      const img = document.getElementById("menuImage").value.trim();
+      if (!name || !price || !img) return alert("กรุณากรอกข้อมูลให้ครบ");
+      menuItems.push({ id: Date.now(), name, price, img });
+      localStorage.setItem("menuData", JSON.stringify(menuItems));
+      renderTable(); renderOrderMenu(); addMenuForm.reset();
     });
 
-    function editMenu(index){
-      const item=menuItems[index];
-      const newName=prompt("ชื่อเมนูใหม่:",item.name);
-      const newPrice=prompt("ราคาใหม่:",item.price);
-      if(newName&&newPrice){ item.name=newName; item.price=parseFloat(newPrice); renderTable(); saveMenu(); renderOrderMenu(); renderPromos(); }
-    }
-
-    function deleteMenu(index){
-      if(confirm("ต้องการลบเมนูนี้ใช่ไหม?")){
-        menuItems.splice(index,1);
-        renderTable(); saveMenu(); renderOrderMenu(); renderPromos();
+    function editMenu(index) {
+      const item = menuItems[index];
+      const newName = prompt("ชื่อเมนูใหม่:", item.name);
+      const newPrice = prompt("ราคาใหม่:", item.price);
+      if (newName && newPrice) {
+        item.name = newName;
+        item.price = parseFloat(newPrice);
+        localStorage.setItem("menuData", JSON.stringify(menuItems));
+        renderTable(); renderOrderMenu();
       }
     }
 
-    function saveMenu(){ localStorage.setItem("menuData",JSON.stringify(menuItems)); }
+    function deleteMenu(index) {
+      if (confirm("ต้องการลบเมนูนี้ใช่ไหม?")) {
+        menuItems.splice(index, 1);
+        localStorage.setItem("menuData", JSON.stringify(menuItems));
+        renderTable(); renderOrderMenu();
+      }
+    }
 
     // ---------- สั่งอาหาร ----------
-    function renderOrderMenu(){
-      orderMenuContainer.innerHTML="";
-      if(menuItems.length===0){
-        orderMenuContainer.innerHTML=`<p class="text-center text-gray-500 col-span-full">❌ ยังไม่มีเมนูในระบบ</p>`;
+    function renderOrderMenu() {
+      orderMenuContainer.innerHTML = "";
+      if (menuItems.length === 0) {
+        orderMenuContainer.innerHTML = `<p class="text-center text-gray-500 col-span-full">❌ ยังไม่มีเมนูในระบบ</p>`;
         return;
       }
-      menuItems.forEach(item=>{
-        const card=document.createElement("div");
-        card.className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition";
-        card.innerHTML=`
+      menuItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition";
+        card.innerHTML = `
           <img src="${item.img}" alt="${item.name}" class="w-24 h-24 mb-3 object-cover rounded">
-          <h2 class="font-semibold">${item.name}${item.size ? " ("+item.size+")" : ""}</h2>
+          <h2 class="font-semibold">${item.name}</h2>
           <p class="text-gray-600 mb-3">${item.price} บาท</p>
           <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700" onclick="addToOrder(${item.id})">เพิ่ม</button>
         `;
@@ -187,154 +178,152 @@
       });
     }
 
-    function addToOrder(id){
-      const item=menuItems.find(i=>i.id===id);
-      const existing=order.find(o=>o.id===id);
-      if(existing) existing.qty++; else order.push({...item,qty:1});
+    function addToOrder(id) {
+      const item = menuItems.find(i => i.id === id);
+      const existing = order.find(o => o.id === id);
+      if (existing) existing.qty++;
+      else order.push({ ...item, qty: 1 });
       updateOrderSummary();
     }
 
-    function updateOrderSummary(){
-      orderList.innerHTML="";
-      let total=0;
-      order.forEach(item=>{
-        total+=item.price*item.qty;
-        const sizeText=item.size ? ` (${item.size})` : "";
-        orderList.innerHTML+=`<li class="flex justify-between items-center mb-1">${item.name}${sizeText} x${item.qty} <button onclick="removeItem(${item.id})" class="text-red-500 ml-2">✕</button></li>`;
+    function updateOrderSummary() {
+      orderList.innerHTML = "";
+      let total = 0;
+      order.forEach(item => {
+        total += item.price * item.qty;
+        orderList.innerHTML += `<li class="flex justify-between mb-1">${item.name} x${item.qty} <button onclick="removeItem(${item.id})" class="text-red-500 ml-2">✕</button></li>`;
       });
-      totalDisplay.textContent=total;
-      orderSummary.classList.toggle("hidden",order.length===0);
+      totalDisplay.textContent = total;
+      orderSummary.classList.toggle("hidden", order.length === 0);
     }
 
-    function removeItem(id){ order=order.filter(i=>i.id!==id); updateOrderSummary(); }
+    function removeItem(id) {
+      order = order.filter(i => i.id !== id);
+      updateOrderSummary();
+    }
 
-    function submitOrder(){
-      if(order.length===0) return alert("ยังไม่มีรายการอาหาร");
-      const orderData={timestamp:new Date().toLocaleString(), items:order, total:totalDisplay.textContent};
+    function submitOrder() {
+      if (order.length === 0) return alert("ยังไม่มีรายการอาหาร");
+      const orderData = { timestamp: new Date().toLocaleString(), items: order, total: totalDisplay.textContent };
       allOrders.push(orderData);
-      localStorage.setItem("allOrders",JSON.stringify(allOrders));
+      localStorage.setItem("allOrders", JSON.stringify(allOrders));
       alert("ส่งออเดอร์เรียบร้อย ✅");
-      order=[]; updateOrderSummary();
-      showSection('report'); updateReport();
-    }
-
-    // ---------- โปรโมชั่น ----------
-    const promoItems = [
-      {id:101,name:"โปรไก่ชิ้น", options:[
-        {label:"3 ชิ้น = 39 บาท", price:39, qty:3},
-        {label:"6 ชิ้น = 79 บาท", price:79, qty:6},
-        {label:"10 ชิ้น = 129 บาท", price:129, qty:10},
-      ]}
-    ];
-    const promoContainer=document.getElementById("promoContainer");
-
-    function renderPromos(){
-      promoContainer.innerHTML="";
-      promoItems.forEach(promo=>{
-        const card=document.createElement("div");
-        card.className="bg-yellow-200 p-4 rounded-lg shadow flex flex-col gap-2";
-        card.innerHTML=`<h3 class="font-semibold text-lg">${promo.name}</h3>`;
-        promo.options.forEach(opt=>{
-          const btn=document.createElement("button");
-          btn.className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600";
-          btn.textContent=opt.label;
-          btn.onclick=()=> addPromoToOrder(promo.name,opt.price,opt.qty,opt.details);
-          card.appendChild(btn);
-        });
-        promoContainer.appendChild(card);
-      });
-    }
-
-    function addPromoToOrder(name,price,qty,size){
-      const existing=order.find(o=>o.name===name && o.price===price && o.size===size);
-      if(existing) existing.qty+=qty;
-      else order.push({id:Date.now(),name,price,qty,size});
+      order = [];
       updateOrderSummary();
+      showSection('report');
+      updateReport();
     }
-
-    renderOrderMenu(); renderPromos();
 
     // ---------- รายรับรายจ่าย ----------
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw4nTWrZFatW2gHgh6_d8MAjNRvyTGcmtmad1SYGeygIKGiRg7U_3m7ytdPx8-pG9GwdA/exec"; // <-- ใส่ URL Web App ของ Google Sheet
+    function updateReport() {
+      const reportSection = document.getElementById("reportSection");
+      reportSection.innerHTML = `<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>`;
+      if (allOrders.length === 0) {
+        reportSection.innerHTML += `<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`;
+        return;
+      }
 
-    function updateReport(){
-      const reportSection=document.getElementById("reportSection");
-      reportSection.innerHTML=`<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>`;
-      if(allOrders.length===0){ 
-        reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; 
-        return; 
-      }
-      let totalIncome=0;
-      const container=document.createElement("div");
-      container.className="bg-white p-4 rounded shadow space-y-4";
-      const menuSummary={};
-      allOrders.forEach((ord,index)=>{
-        let orderHtml=`<div class="border-b pb-2"><p class="font-semibold">ออเดอร์ #${index+1} - ${ord.timestamp}</p><ul class="ml-4">`;
-        ord.items.forEach(item=>{
-          const sizeText=item.size?` (${item.size})`:"";
-          orderHtml+=`<li>${item.name}${sizeText} x${item.qty} = ${item.price*item.qty} บาท</li>`;
-          totalIncome+=item.price*item.qty;
-          const key=item.name+(item.size?` (${item.size})`:"");
-          if(menuSummary[key]) menuSummary[key].qty+=item.qty;
-          else menuSummary[key]={price:item.price,qty:item.qty};
+      let totalIncome = 0;
+      const container = document.createElement("div");
+      container.className = "bg-white p-4 rounded shadow space-y-4";
+      allOrders.forEach((ord, index) => {
+        let orderHtml = `<div class="border-b pb-2"><p class="font-semibold">ออเดอร์ #${index + 1} - ${ord.timestamp}</p><ul class="ml-4">`;
+        ord.items.forEach(item => {
+          orderHtml += `<li>${item.name} x${item.qty} = ${item.price * item.qty} บาท</li>`;
+          totalIncome += item.price * item.qty;
         });
-        orderHtml+=`</ul></div>`;
-        container.innerHTML+=orderHtml;
+        orderHtml += `</ul></div>`;
+        container.innerHTML += orderHtml;
       });
-      let summaryHtml=`<div class="bg-gray-100 p-3 rounded shadow mt-4"><p class="font-semibold mb-2">📊 สรุปตามเมนู</p><ul>`;
-      for(const name in menuSummary){
-        const item=menuSummary[name];
-        summaryHtml+=`<li>${name}: ${item.qty} ชิ้น รวม ${item.price*item.qty} บาท</li>`;
-      }
-      summaryHtml+=`</ul></div>`;
-      container.innerHTML+=summaryHtml;
+
       reportSection.appendChild(container);
-      reportSection.innerHTML+=`<p class="mt-4 font-bold text-lg">ยอดรวมทั้งหมด: ${totalIncome} บาท</p>`;
+      reportSection.innerHTML += `<p class="mt-4 font-bold text-lg">ยอดรวมทั้งหมด: ${totalIncome} บาท</p>`;
 
       // ปุ่มส่ง Google Sheet
       const sendBtn = document.createElement("button");
       sendBtn.textContent = "ส่งเข้า Google Sheet";
-      sendBtn.className="mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700";
+      sendBtn.className = "mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700";
       sendBtn.onclick = sendToGoogleSheet;
       reportSection.appendChild(sendBtn);
+
+      // ปุ่มจบวัน
+      const endDayBtn = document.createElement("button");
+      endDayBtn.textContent = "จบวัน (รีเซ็ตข้อมูล)";
+      endDayBtn.className = "mt-4 ml-2 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700";
+      endDayBtn.onclick = endDay;
+      reportSection.appendChild(endDayBtn);
     }
 
-    function sendToGoogleSheet() {
-      if(allOrders.length === 0) return alert("ยังไม่มีออเดอร์ให้ส่ง");
-
-      fetch(webAppUrl, {
-        method: "POST",
-        body: JSON.stringify({ items: allOrders.map(o => o.items).flat(), timestamp: new Date().toLocaleString() }),
-        headers: { "Content-Type": "application/json" }
-      })
-      .then(response => response.text())
-      .then(res => {
-        alert("ส่งข้อมูลเรียบร้อย ✅\n" + res);
-      })
-      .catch(err => alert("เกิดข้อผิดพลาด: " + err));
+    // ---------- จบวัน ----------
+    function endDay() {
+      if (confirm("คุณแน่ใจหรือไม่ว่าต้องการจบวัน? ข้อมูลรายรับรายจ่ายทั้งหมดจะถูกล้าง!")) {
+        localStorage.removeItem("allOrders");
+        allOrders = [];
+        alert("รีเซ็ตรายรับรายจ่ายเรียบร้อย ✅");
+        updateReport();
+      }
     }
 
-    // ---------- Sidebar + Logout ----------
-    function logout(){ window.location.href="index.html"; }
-    function toggleSidebar(){
-      const sidebar=document.getElementById("sidebar");
+    // ---------- ✅ ฟังก์ชันส่งเข้า Google Sheet (เวอร์ชันแก้แล้ว) ----------
+    async function sendToGoogleSheet() {
+      if (allOrders.length === 0) {
+        alert("ไม่มีข้อมูลจะส่ง");
+        return;
+      }
+
+      const dataToSend = [];
+      allOrders.forEach(order => {
+        order.items.forEach(item => {
+          dataToSend.push({
+            date: order.timestamp,
+            name: item.name,
+            qty: item.qty,
+            total: item.price * item.qty
+          });
+        });
+      });
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbz4cObUvyCWvlIBO9Iee9dJ5vi6svCTWFSK9rj8k-_ADFGj-QpheDHKWoC2HLATQgP3Zw/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToSend)
+        });
+
+        if (response.ok) {
+          alert("✅ ส่งข้อมูลเข้า Google Sheet สำเร็จแล้ว!");
+        } else {
+          alert("❌ การส่งข้อมูลล้มเหลว (response not ok)");
+        }
+      } catch (error) {
+        alert("❌ เชื่อมต่อ Google Sheet ไม่สำเร็จ");
+        console.error(error);
+      }
+    }
+
+    // ---------- Sidebar ----------
+    function logout() { window.location.href = "index.html"; }
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
       sidebar.classList.toggle("sidebar-collapsed");
       sidebar.classList.toggle("w-16");
       sidebar.classList.toggle("w-64");
-      if(sidebar.classList.contains("w-16")){
-        orderSummary.style.left="4rem"; orderSummary.style.width="calc(100% - 4rem)";
+      if (sidebar.classList.contains("w-16")) {
+        orderSummary.style.left = "4rem"; orderSummary.style.width = "calc(100% - 4rem)";
       } else {
-        orderSummary.style.left="16rem"; orderSummary.style.width="calc(100% - 16rem)";
+        orderSummary.style.left = "16rem"; orderSummary.style.width = "calc(100% - 16rem)";
       }
     }
-    function showSection(section){
+    function showSection(section) {
       document.getElementById("menuSection").classList.add("hidden");
       document.getElementById("orderSection").classList.add("hidden");
       document.getElementById("reportSection").classList.add("hidden");
-      if(section==="menu") document.getElementById("menuSection").classList.remove("hidden");
-      if(section==="order") document.getElementById("orderSection").classList.remove("hidden");
-      if(section==="report") document.getElementById("reportSection").classList.remove("hidden");
+      if (section === "menu") document.getElementById("menuSection").classList.remove("hidden");
+      if (section === "order") document.getElementById("orderSection").classList.remove("hidden");
+      if (section === "report") document.getElementById("reportSection").classList.remove("hidden");
     }
+
+    renderOrderMenu();
     updateReport();
   </script>
 </body>
