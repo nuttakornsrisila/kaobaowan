@@ -33,9 +33,13 @@
       <button onclick="showSection('report')" class="flex items-center gap-2 bg-yellow-300 py-2 px-2 rounded hover:bg-yellow-400">
         <span class="sidebar-text">รายรับรายจ่าย</span>
       </button>
+      <button onclick="showSection('history')" class="flex items-center gap-2 bg-yellow-300 py-2 px-2 rounded hover:bg-yellow-400">
+        <span class="sidebar-text">ประวัติออเดอร์ที่จบแล้ว</span>
+      </button>
       <button onclick="logout()" class="flex items-center gap-2 bg-red-500 text-white py-2 px-2 rounded hover:bg-red-600 mt-auto">
         <span class="sidebar-text">ออกจากระบบ</span>
       </button>
+      
     </nav>
   </aside>
 
@@ -93,6 +97,13 @@
 
     <!-- Section รายรับรายจ่าย -->
     <section id="reportSection" class="hidden"></section>
+    
+    <!-- Section ประวัติออเดอร์ที่จบแล้ว -->
+    <section id="historySection" class="hidden">
+      <h2 class="text-2xl font-semibold mb-4">📜 ประวัติออเดอร์ที่จบแล้ว</h2>
+      <div id="historyContainer" class="bg-white p-4 rounded shadow space-y-4"></div>
+    </section>
+
 
   </main>
 
@@ -314,6 +325,29 @@
       reportSection.appendChild(container);
       reportSection.innerHTML+=`<p class="mt-4 font-bold text-lg">ยอดรวมทั้งหมด: ${totalIncome} บาท</p>`;
     }
+    function renderHistory(){
+      const historyContainer = document.getElementById("historyContainer");
+      historyContainer.innerHTML = "";
+      if(allOrders.length === 0){
+        historyContainer.innerHTML = `<p class="text-gray-500">ยังไม่มีออเดอร์ที่จบแล้ว</p>`;
+        return;
+      }
+
+      allOrders.forEach((order, index) => {
+        let itemsHtml = "";
+        order.items.forEach(item => {
+          const sizeText = item.size ? ` (${item.size})` : "";
+          itemsHtml += `<li>${item.name}${sizeText} x${item.qty} = ${item.price * item.qty} บาท</li>`;
+        });
+        historyContainer.innerHTML += `
+          <div class="border-b pb-2">
+            <p class="font-semibold">🧾 ออเดอร์ #${index + 1} - ${order.timestamp}</p>
+            <ul class="ml-4 list-disc">${itemsHtml}</ul>
+            <p class="font-bold mt-1">รวม: ${order.total} บาท</p>
+          </div>
+        `;
+      });
+    }
 
     // ---------- Sidebar + Logout ----------
     function logout(){ window.location.href="index.html"; }
@@ -332,9 +366,14 @@
       document.getElementById("menuSection").classList.add("hidden");
       document.getElementById("orderSection").classList.add("hidden");
       document.getElementById("reportSection").classList.add("hidden");
+      document.getElementById("historySection").classList.add("hidden");
       if(section==="menu") document.getElementById("menuSection").classList.remove("hidden");
       if(section==="order") document.getElementById("orderSection").classList.remove("hidden");
       if(section==="report") document.getElementById("reportSection").classList.remove("hidden");
+      if(section==="history"){ 
+        document.getElementById("historySection").classList.remove("hidden");
+        renderHistory(); // ฟังก์ชันที่จะแสดงข้อมูลประวัติ
+      }
     }
     updateReport();
   </script>
