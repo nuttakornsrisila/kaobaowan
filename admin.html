@@ -39,7 +39,7 @@
       <button onclick="logout()" class="flex items-center gap-2 bg-red-500 text-white py-2 px-2 rounded hover:bg-red-600 mt-auto">
         <span class="sidebar-text">ออกจากระบบ</span>
       </button>
-      
+
     </nav>
   </aside>
 
@@ -97,7 +97,7 @@
 
     <!-- Section รายรับรายจ่าย -->
     <section id="reportSection" class="hidden"></section>
-    
+
     <!-- Section ประวัติออเดอร์ที่จบแล้ว -->
     <section id="historySection" class="hidden">
       <h2 class="text-2xl font-semibold mb-4">📜 ประวัติออเดอร์ที่จบแล้ว</h2>
@@ -127,6 +127,8 @@
     ];
 
     let allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+    let pendingOrders = JSON.parse(localStorage.getItem("pendingOrders")) || [];
+    let completedOrders = JSON.parse(localStorage.getItem("completedOrders")) || [];
     const menuTable = document.getElementById("menuTable");
     const addMenuForm = document.getElementById("addMenuForm");
     const orderMenuContainer = document.getElementById("orderMenuContainer");
@@ -223,40 +225,47 @@
 
     function submitOrder(){
       if(order.length===0) return alert("ยังไม่มีรายการอาหาร");
-      const orderData={timestamp:new Date().toLocaleString(), items:order, total:totalDisplay.textContent};
-      allOrders.push(orderData);
-      localStorage.setItem("allOrders",JSON.stringify(allOrders));
+      const orderData = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString(),
+        items: order,
+        total: totalDisplay.textContent
+      };
+      pendingOrders.push(orderData);
+      localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
       alert("ส่งออเดอร์เรียบร้อย ✅");
-      order=[]; updateOrderSummary();
-      showSection('report'); updateReport();
+      order = [];
+      updateOrderSummary();
+      showSection('report');
+      updateReport();
     }
 
     // ---------- โปรโมชั่น ----------
     const promoItems = [
       {id:101,name:"โปรไก่ชิ้น", options:[
-        {label:"3 ชิ้น = 39 บาท", price:39, qty:3},
-        {label:"6 ชิ้น = 79 บาท", price:79, qty:6},
-        {label:"10 ชิ้น = 129 บาท", price:129, qty:10},
+        {label:"3 ชิ้น = 39 บาท", price:39, qty:1},
+        {label:"6 ชิ้น = 79 บาท", price:79, qty:1},
+        {label:"10 ชิ้น = 129 บาท", price:129, qty:1},
       ]},
       {id:102,name:"โปรน่องไก่ใหญ่", options:[
-        {label:"3 ชิ้น = 79 บาท", price:79, qty:3},
-        {label:"6 ชิ้น = 159 บาท", price:159, qty:6},
+        {label:"3 ชิ้น = 79 บาท", price:79, qty:1},
+        {label:"6 ชิ้น = 159 บาท", price:159, qty:1},
       ]},
       {id:103,name:"โปรสะโพกไก่", options:[
-        {label:"3 ชิ้น = 99 บาท", price:99, qty:3},
+        {label:"3 ชิ้น = 99 บาท", price:99, qty:1},
       ]},
       {id:104,name:"โปรไก่ไร้กระดูก", options:[
-        {label:"5 ชิ้น = 59 บาท", price:59, qty:5},
-        {label:"10 ชิ้น = 99 บาท", price:99, qty:10},
+        {label:"5 ชิ้น = 59 บาท", price:59, qty:1},
+        {label:"10 ชิ้น = 99 บาท", price:99, qty:1},
       ]},
       {id:105,name:"โปรรวมพิเศษ", options:[
-        {label:"สะโพก 1 + น่องใหญ่ 2 = 89 บาท", price:89, qty:3},
-         {label:"เฟรนช์ฟรายส์ M + ไก่ทอด (ชิ้นละ 15) 3 ชิ้น = 69 บาท", price:69, qty:3},
+        {label:"สะโพก 1 + น่องใหญ่ 2 = 89 บาท", price:89, qty:1},
+         {label:"เฟรนช์ฟรายส์ M + ไก่ทอด (ชิ้นละ 15) 3 ชิ้น = 69 บาท", price:69, qty:1},
       ]},
       {id:106,name:"เซตสุดคุ้ม", options:[
-        {label:"ทุกชิ้นส่วน อย่างละ 1  = 109 บาท", price:109, qty:6},
-        {label:"ทุกชิ้นส่วน อย่างละ 2  = 209 บาท", price:209, qty:12},
-        {label:"ทุกชิ้นส่วน อย่างละ 3  = 309 บาท", price:309, qty:18},
+        {label:"ทุกชิ้นส่วน อย่างละ 1  = 109 บาท", price:109, qty:1},
+        {label:"ทุกชิ้นส่วน อย่างละ 2  = 209 บาท", price:209, qty:1},
+        {label:"ทุกชิ้นส่วน อย่างละ 3  = 309 บาท", price:309, qty:1},
       ]},
       // --- โปรโมชั่นเฟรนช์ฟรายส์ ---
       {id:201, name:"โปรเฟรนช์ฟรายส์ & ฮอทดอก", options:[
@@ -297,12 +306,12 @@
     function updateReport(){
       const reportSection=document.getElementById("reportSection");
       reportSection.innerHTML=`<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>`;
-      if(allOrders.length===0){ reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; return; }
+      if(pendingOrders.length===0){ reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; return; }
       let totalIncome=0;
       const container=document.createElement("div");
       container.className="bg-white p-4 rounded shadow space-y-4";
       const menuSummary={};
-      allOrders.forEach((ord,index)=>{
+      pendingOrders.forEach((ord,index)=>{
         let orderHtml=`<div class="border-b pb-2"><p class="font-semibold">ออเดอร์ #${index+1} - ${ord.timestamp}</p><ul class="ml-4">`;
         ord.items.forEach(item=>{
           const sizeText=item.size?` (${item.size})`:"";
@@ -312,7 +321,10 @@
           if(menuSummary[key]) menuSummary[key].qty+=item.qty;
           else menuSummary[key]={price:item.price,qty:item.qty};
         });
-        orderHtml+=`</ul></div>`;
+        orderHtml+=`</ul>
+        <p class="font-bold mt-1">รวม: ${ord.total} บาท</p>
+        <button onclick="confirmOrder(${index})" class="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">✅ ยืนยันออเดอร์นี้</button>
+        </div>`;
         container.innerHTML+=orderHtml;
       });
       let summaryHtml=`<div class="bg-gray-100 p-3 rounded shadow mt-4"><p class="font-semibold mb-2">📊 สรุปตามเมนู</p><ul>`;
@@ -348,6 +360,44 @@
         `;
       });
     }
+    function confirmOrder(index) {
+      const confirmed = confirm("คุณต้องการยืนยันออเดอร์นี้หรือไม่?");
+      if (!confirmed) return;
+      // ย้ายออเดอร์จาก pendingOrders → completedOrders
+      completedOrders.push(pendingOrders[index]);
+      pendingOrders.splice(index, 1);
+      // บันทึกกลับลง localStorage
+      localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+      localStorage.setItem("completedOrders", JSON.stringify(completedOrders));
+       // อัปเดตหน้า
+      updateReport();
+      renderHistory();
+    }
+
+    // ---------- ประวัติออเดอร์ ----------
+    function renderHistory(){
+      const historyContainer = document.getElementById("historyContainer");
+      historyContainer.innerHTML = "";
+      if(completedOrders.length === 0){
+        historyContainer.innerHTML = `<p class="text-gray-500">ยังไม่มีออเดอร์ที่จบแล้ว</p>`;
+        return;
+      }
+
+      completedOrders.forEach((order, index) => {
+        let itemsHtml = "";
+        order.items.forEach(item => {
+          const sizeText = item.size ? ` (${item.size})` : "";
+          itemsHtml += `<li>${item.name}${sizeText} x${item.qty} = ${item.price * item.qty} บาท</li>`;
+        });
+        historyContainer.innerHTML += `
+        <div class="border-b pb-2 mb-2">
+          <p class="font-semibold">🧾 ออเดอร์ #${index + 1} - ${order.timestamp}</p>
+          <ul class="ml-4 list-disc">${itemsHtml}</ul>
+          <p class="font-bold mt-1">รวม: ${order.total} บาท</p>
+        </div>
+      `;
+    });
+  }
 
     // ---------- Sidebar + Logout ----------
     function logout(){ window.location.href="index.html"; }
