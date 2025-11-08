@@ -133,6 +133,58 @@
             </span>
           </div>
         </div>
+
+      <!-- ฟอร์มแก้ไขเมนู (ซ่อนไว้) -->
+      <div id="editMenuForm" class="hidden mb-6 rounded-xl p-6" style="background-color: #FFE7A0; border: 2px solid #D8504C;">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-semibold" style="color: #D8504C;">✏️ แก้ไขเมนู</h3>
+          <button onclick="cancelEdit()" class="text-gray-600 hover:text-red-600 font-bold text-2xl">&times;</button>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: #2F2F2F;">ชื่อเมนู</label>
+            <input type="text" id="editMenuName" class="w-full px-4 py-3 rounded-xl" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: #2F2F2F;">ราคา (บาท)</label>
+            <input type="number" id="editMenuPrice" class="w-full px-4 py-3 rounded-xl" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          </div>
+        </div>
+        
+        <div class="mt-4">
+          <label class="block text-sm font-medium mb-2" style="color: #2F2F2F;">รูปภาพ</label>
+          <div class="flex gap-3 mb-3">
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="none" checked>
+              <span class="ml-2">ไม่เปลี่ยน</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="url">
+              <span class="ml-2">ใช้ URL</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="file">
+              <span class="ml-2">อัปโหลดไฟล์</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="remove">
+              <span class="ml-2">ลบรูป</span>
+            </label>
+          </div>
+          <input type="text" id="editImageUrl" placeholder="ลิ้งก์รูปภาพ (URL)" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          <input type="file" id="editImageFile" accept="image/*" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          <img id="editPreviewImage" src="" alt="Preview" class="w-32 h-32 object-cover rounded-xl mt-2 hidden" style="border: 2px solid #E5E4E2;">
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+          <button onclick="saveEditMenu()" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold flex-1">
+            💾 บันทึกการแก้ไข
+          </button>
+          <button onclick="cancelEdit()" class="btn-secondary px-6 py-3 rounded-xl font-semibold">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
       <div class="overflow-x-auto bg-white rounded-xl shadow-md mb-6">
         <table class="min-w-full border-collapse">
           <thead class="bg-indigo-100">
@@ -630,12 +682,133 @@
     // preview click to open full image in new window
     document.getElementById('previewImage').addEventListener('click', function(){ if(this.src) window.open(this.src, '_blank'); });
 
+    let editingIndex = -1;
+    
     function editMenu(index){
-      const item=menuItems[index];
-      const newName=prompt("ชื่อเมนูใหม่:",item.name);
-      const newPrice=prompt("ราคาใหม่:",item.price);
-      if(newName&&newPrice){ item.name=newName; item.price=parseFloat(newPrice); renderTable(); saveMenu(); renderOrderMenu(); renderPromos(); }
+      editingIndex = index;
+      const item = menuItems[index];
+      
+      // แสดงฟอร์มแก้ไข
+      document.getElementById('editMenuForm').classList.remove('hidden');
+      document.getElementById('editMenuName').value = item.name;
+      document.getElementById('editMenuPrice').value = item.price;
+      
+      // แสดง preview รูปปัจจุบัน
+      const preview = document.getElementById('editPreviewImage');
+      if(item.img) {
+        preview.src = item.img;
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+      
+      // Reset radio buttons
+      document.querySelector('input[name="editImageSource"][value="none"]').checked = true;
+      document.getElementById('editImageUrl').classList.add('hidden');
+      document.getElementById('editImageFile').classList.add('hidden');
+      
+      // Scroll to form
+      document.getElementById('editMenuForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    
+    function cancelEdit() {
+      editingIndex = -1;
+      document.getElementById('editMenuForm').classList.add('hidden');
+      document.getElementById('editImageUrl').value = '';
+      document.getElementById('editImageFile').value = '';
+      document.getElementById('editPreviewImage').classList.add('hidden');
+    }
+    
+    function saveEditMenu() {
+      if(editingIndex === -1) return;
+      
+      const item = menuItems[editingIndex];
+      const newName = document.getElementById('editMenuName').value.trim();
+      const newPrice = parseFloat(document.getElementById('editMenuPrice').value);
+      
+      if(!newName || !newPrice) {
+        alert('❌ กรุณากรอกชื่อและราคา');
+        return;
+      }
+      
+      item.name = newName;
+      item.price = newPrice;
+      
+      // จัดการรูปภาพ
+      const imageSource = document.querySelector('input[name="editImageSource"]:checked').value;
+      
+      if(imageSource === 'url') {
+        const url = document.getElementById('editImageUrl').value.trim();
+        if(url) item.img = url;
+      } else if(imageSource === 'file') {
+        const file = document.getElementById('editImageFile').files[0];
+        if(file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            item.img = e.target.result;
+            finishEdit();
+          };
+          reader.readAsDataURL(file);
+          return; // รอการอ่านไฟล์เสร็จ
+        }
+      } else if(imageSource === 'remove') {
+        item.img = '';
+      }
+      // imageSource === 'none' ไม่ต้องทำอะไร
+      
+      finishEdit();
+    }
+    
+    function finishEdit() {
+      renderTable();
+      saveMenu();
+      renderOrderMenu();
+      renderPromos();
+      cancelEdit();
+      alert('✅ แก้ไขเมนูสำเร็จ!');
+    }
+    
+    // Event listeners สำหรับฟอร์มแก้ไข
+    document.querySelectorAll('input[name="editImageSource"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const urlInput = document.getElementById('editImageUrl');
+        const fileInput = document.getElementById('editImageFile');
+        
+        if(this.value === 'url') {
+          urlInput.classList.remove('hidden');
+          fileInput.classList.add('hidden');
+        } else if(this.value === 'file') {
+          urlInput.classList.add('hidden');
+          fileInput.classList.remove('hidden');
+        } else {
+          urlInput.classList.add('hidden');
+          fileInput.classList.add('hidden');
+        }
+      });
+    });
+    
+    // Preview รูปจาก URL
+    document.getElementById('editImageUrl').addEventListener('input', function() {
+      const preview = document.getElementById('editPreviewImage');
+      if(this.value.trim()) {
+        preview.src = this.value.trim();
+        preview.classList.remove('hidden');
+      }
+    });
+    
+    // Preview รูปจากไฟล์
+    document.getElementById('editImageFile').addEventListener('change', function() {
+      const file = this.files[0];
+      const preview = document.getElementById('editPreviewImage');
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
     function deleteMenu(index){
       if(confirm("ต้องการลบเมนูนี้ใช่ไหม?")){
