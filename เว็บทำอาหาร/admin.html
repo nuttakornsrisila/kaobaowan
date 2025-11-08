@@ -247,6 +247,71 @@
           </div>
         </div>
 
+        <!-- ฟอร์มแก้ไขโปรโมชั่น (ซ่อนไว้) -->
+        <div id="editPromoForm" class="hidden mb-6 rounded-2xl p-6" style="background-color: #F3F2EF; border: 2px solid #D8504C;">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-semibold" style="color: #D8504C;">✏️ แก้ไขโปรโมชั่น</h3>
+            <button onclick="cancelEditPromo()" class="text-gray-600 hover:text-red-600 font-bold text-3xl leading-none">&times;</button>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <!-- คอลัมน์ซ้าย: ข้อมูลพื้นฐาน -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold mb-2" style="color: #2F2F2F;">ชื่อโปรโมชั่น</label>
+                <input type="text" id="editPromoName" placeholder="เช่น: โปรไก่ชิ้น" class="w-full px-4 py-3 rounded-xl" style="border: 1px solid #E5E4E2; background-color: #FAF9F7; font-size: 16px;">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold mb-2" style="color: #2F2F2F;">รูปภาพโปรโมชั่น</label>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="none" checked class="mr-2">
+                    <span class="text-sm">ไม่เปลี่ยน</span>
+                  </label>
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="url" class="mr-2">
+                    <span class="text-sm">ใช้ URL</span>
+                  </label>
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="file" class="mr-2">
+                    <span class="text-sm">อัปโหลดไฟล์</span>
+                  </label>
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="remove" class="mr-2">
+                    <span class="text-sm">ลบรูป</span>
+                  </label>
+                </div>
+                <input type="text" id="editPromoImageUrl" placeholder="ลิ้งก์รูปภาพ (URL)" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+                <input type="file" id="editPromoImageFile" accept="image/*" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+                <img id="editPromoPreviewImage" src="" alt="Preview" class="w-full h-40 object-cover rounded-xl mt-3 hidden" style="border: 2px solid #E5E4E2;">
+              </div>
+            </div>
+            
+            <!-- คอลัมน์ขวา: ตัวเลือก -->
+            <div>
+              <label class="block text-sm font-semibold mb-2" style="color: #2F2F2F;">ตัวเลือกโปรโมชั่น</label>
+              <div class="rounded-xl p-4 mb-3" style="background-color: #FAF9F7; border: 1px solid #E5E4E2; max-height: 400px; overflow-y: auto;">
+                <div id="editPromoOptionsContainer" class="space-y-2">
+                  <!-- ตัวเลือกจะถูกเพิ่มที่นี่ -->
+                </div>
+              </div>
+              <button type="button" onclick="addEditPromoOption()" class="w-full btn-primary text-white px-4 py-3 rounded-xl font-semibold">
+                ➕ เพิ่มตัวเลือก
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button onclick="saveEditPromo()" class="btn-primary text-white px-8 py-3 rounded-xl font-semibold flex-1" style="font-size: 16px;">
+              💾 บันทึกการแก้ไข
+            </button>
+            <button onclick="cancelEditPromo()" class="btn-secondary px-8 py-3 rounded-xl font-semibold" style="font-size: 16px;">
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+
         <!-- ตารางโปรโมชั่น -->
         <div class="overflow-x-auto bg-white rounded-xl shadow-md mb-6">
           <table class="min-w-full border-collapse">
@@ -510,12 +575,6 @@
     <!-- Section ประวัติออเดอร์ที่จบแล้ว -->
     <section id="historySection" class="hidden">
       <h2 class="text-2xl font-semibold mb-4">📜 ประวัติออเดอร์ที่จบแล้ว</h2>
-
-      <button onclick="clearAllHistory()" 
-        class="mb-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-        🗑️ เคลียร์บิลออเดอร์ทั้งหมด
-      </button>
-
       <div id="historyContainer" class="bg-white p-4 rounded shadow space-y-4"></div>
     </section>
 
@@ -1069,9 +1128,8 @@
             <td class="border p-3 font-semibold">${promo.name}</td>
             <td class="border p-3 text-sm">${optionsText}</td>
             <td class="border p-3">
-              <button onclick="deletePromo(${index})" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-                🗑️ ลบ
-              </button>
+              <button onclick="editPromo(${index})" class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 mr-2">แก้ไข</button>
+              <button onclick="deletePromo(${index})" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">ลบ</button>
             </td>
           </tr>
         `;
@@ -1092,6 +1150,209 @@
         alert('✅ ลบโปรโมชั่นสำเร็จ');
       }
     }
+    
+    // ฟังก์ชันแก้ไขโปรโมชั่น
+    let editingPromoIndex = -1;
+    let editPromoOptionsList = [];
+    
+    function editPromo(index) {
+      editingPromoIndex = index;
+      const promo = promoItems[index];
+      
+      // แสดงฟอร์มแก้ไข
+      document.getElementById('editPromoForm').classList.remove('hidden');
+      document.getElementById('editPromoName').value = promo.name;
+      
+      // แสดง preview รูปปัจจุบัน
+      const preview = document.getElementById('editPromoPreviewImage');
+      if(promo.image) {
+        preview.src = promo.image;
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+      
+      // โหลดตัวเลือกปัจจุบัน
+      editPromoOptionsList = JSON.parse(JSON.stringify(promo.options)); // Deep copy
+      renderEditPromoOptions();
+      
+      // Reset radio buttons
+      document.querySelector('input[name="editPromoImageSource"][value="none"]').checked = true;
+      document.getElementById('editPromoImageUrl').classList.add('hidden');
+      document.getElementById('editPromoImageFile').classList.add('hidden');
+      
+      // Scroll to form
+      document.getElementById('editPromoForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function renderEditPromoOptions() {
+      const container = document.getElementById('editPromoOptionsContainer');
+      
+      if(editPromoOptionsList.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">ยังไม่มีตัวเลือก กดปุ่ม "เพิ่มตัวเลือก" ด้านล่าง</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      editPromoOptionsList.forEach((opt, idx) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'rounded-xl p-3 mb-2';
+        optionDiv.style.backgroundColor = '#FFE7A0';
+        optionDiv.style.border = '1px solid #E5E4E2';
+        
+        optionDiv.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold" style="color: #D8504C;">ตัวเลือก ${idx + 1}</span>
+            <button type="button" onclick="removeEditPromoOption(${idx})" class="text-red-600 hover:text-red-800 font-bold">
+              🗑️ ลบ
+            </button>
+          </div>
+          <div class="space-y-2">
+            <input type="text" value="${opt.label.split(' = ')[0]}" id="editOptName${idx}" placeholder="ชื่อ (เช่น: 3 ชิ้น)" class="w-full px-3 py-2 rounded-lg text-sm" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="number" value="${opt.price}" id="editOptPrice${idx}" placeholder="ราคา" class="px-3 py-2 rounded-lg text-sm" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+              <input type="number" value="${opt.qty || 1}" id="editOptQty${idx}" placeholder="จำนวน" class="px-3 py-2 rounded-lg text-sm" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+            </div>
+          </div>
+        `;
+        container.appendChild(optionDiv);
+      });
+    }
+    
+    function addEditPromoOption() {
+      editPromoOptionsList.push({ label: '', price: 0, qty: 1 });
+      renderEditPromoOptions();
+    }
+    
+    function removeEditPromoOption(idx) {
+      editPromoOptionsList.splice(idx, 1);
+      renderEditPromoOptions();
+    }
+    
+    function cancelEditPromo() {
+      editingPromoIndex = -1;
+      editPromoOptionsList = [];
+      document.getElementById('editPromoForm').classList.add('hidden');
+      document.getElementById('editPromoImageUrl').value = '';
+      document.getElementById('editPromoImageFile').value = '';
+      document.getElementById('editPromoPreviewImage').classList.add('hidden');
+    }
+    
+    function saveEditPromo() {
+      if(editingPromoIndex === -1) return;
+      
+      const promo = promoItems[editingPromoIndex];
+      const newName = document.getElementById('editPromoName').value.trim();
+      
+      if(!newName) {
+        alert('❌ กรุณากรอกชื่อโปรโมชั่น');
+        return;
+      }
+      
+      // รวบรวมตัวเลือก
+      const options = [];
+      for(let i = 0; i < editPromoOptionsList.length; i++) {
+        const nameEl = document.getElementById('editOptName' + i);
+        const priceEl = document.getElementById('editOptPrice' + i);
+        const qtyEl = document.getElementById('editOptQty' + i);
+        
+        if(nameEl && priceEl && qtyEl) {
+          const name = nameEl.value.trim();
+          const price = parseFloat(priceEl.value);
+          const qty = parseInt(qtyEl.value) || 1;
+          
+          if(name && price) {
+            options.push({
+              label: name + ' = ' + price + ' บาท',
+              price: price,
+              qty: qty
+            });
+          }
+        }
+      }
+      
+      if(options.length === 0) {
+        alert('❌ กรุณาเพิ่มตัวเลือกอย่างน้อย 1 รายการ');
+        return;
+      }
+      
+      promo.name = newName;
+      promo.options = options;
+      
+      // จัดการรูปภาพ
+      const imageSource = document.querySelector('input[name="editPromoImageSource"]:checked').value;
+      
+      if(imageSource === 'url') {
+        const url = document.getElementById('editPromoImageUrl').value.trim();
+        if(url) promo.image = url;
+      } else if(imageSource === 'file') {
+        const file = document.getElementById('editPromoImageFile').files[0];
+        if(file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            promo.image = e.target.result;
+            finishEditPromo();
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+      } else if(imageSource === 'remove') {
+        promo.image = '';
+      }
+      
+      finishEditPromo();
+    }
+    
+    function finishEditPromo() {
+      savePromos();
+      renderPromoTable();
+      renderPromos();
+      cancelEditPromo();
+      alert('✅ แก้ไขโปรโมชั่นสำเร็จ!');
+    }
+    
+    // Event listeners สำหรับฟอร์มแก้ไขโปรโมชั่น
+    document.querySelectorAll('input[name="editPromoImageSource"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const urlInput = document.getElementById('editPromoImageUrl');
+        const fileInput = document.getElementById('editPromoImageFile');
+        
+        if(this.value === 'url') {
+          urlInput.classList.remove('hidden');
+          fileInput.classList.add('hidden');
+        } else if(this.value === 'file') {
+          urlInput.classList.add('hidden');
+          fileInput.classList.remove('hidden');
+        } else {
+          urlInput.classList.add('hidden');
+          fileInput.classList.add('hidden');
+        }
+      });
+    });
+    
+    // Preview รูปจาก URL
+    document.getElementById('editPromoImageUrl').addEventListener('input', function() {
+      const preview = document.getElementById('editPromoPreviewImage');
+      if(this.value.trim()) {
+        preview.src = this.value.trim();
+        preview.classList.remove('hidden');
+      }
+    });
+    
+    // Preview รูปจากไฟล์
+    document.getElementById('editPromoImageFile').addEventListener('change', function() {
+      const file = this.files[0];
+      const preview = document.getElementById('editPromoPreviewImage');
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
     
     // ระบบจัดการโปรโมชั่นแบบหลายตัวเลือก
     let tempPromoOptions = [];
@@ -2277,15 +2538,6 @@
         </div>
       `;
     });
-  }
-  function clearAllHistory() {
-    if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการล้างประวัติออเดอร์ทั้งหมด?")) return;
-    localStorage.removeItem("allOrders");
-    localStorage.removeItem("completedOrders");
-    allOrders = [];
-    completedOrders = [];
-    renderHistory();
-    alert("✅ ล้างประวัติออเดอร์ทั้งหมดเรียบร้อยแล้ว");
   }
 
     // ---------- Sidebar + Logout ----------
