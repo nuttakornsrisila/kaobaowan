@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ปุ่มอัปเดตเมนูอยู่ตรงไหน?</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .arrow {
+      animation: bounce 1s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .highlight-box {
+      animation: pulse 2s infinite;
+      border: 4px solid #ef4444;
+    }
+    @keyframes pulse {
+      0%, 100% { border-color: #ef4444; }
+      50% { border-color: #fbbf24; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">
+      🔍 ปุ่มอัปเดตเมนูอยู่ตรงไหน?
+    </h1>
+
+    <!-- Admin Section -->
+    <div class="mb-12">
+      <h2 class="text-3xl font-bold mb-6 text-blue-600 flex items-center">
+        <span class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">A</span>
+        ฝั่ง Admin (admin.html)
+      </h2>
+      
+      <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+        <!-- Mock Admin Header -->
+        <div class="bg-yellow-500 p-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold">Sidebar</h3>
+          </div>
+        </div>
+        
+        <!-- Mock Admin Content -->
+        <div class="p-6">
+          <div class="highlight-box bg-blue-50 p-6 rounded-lg relative">
+            <div class="absolute -top-12 right-4 arrow">
+              <div class="text-6xl">👇</div>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-semibold">จัดการเมนูอาหาร (Admin)</h2>
+              <div class="flex gap-2">
+                <!-- ปุ่มนี้แหละ! -->
+                <button class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 flex items-center gap-2 text-lg font-bold shadow-lg transform scale-110">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                  </svg>
+                  💾 บันทึกเมนู
+                </button>
+                <span class="bg-gray-100 px-4 py-3 rounded-lg text-gray-700 flex items-center">
+                  📋 เมนูทั้งหมด: <span class="font-bold ml-2">12</span> รายการ
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-red-100 border-4 border-red-500 p-6 rounded-lg mt-4">
+              <div class="flex items-center gap-4">
+                <div class="text-6xl">👈</div>
+                <div>
+                  <p class="text-2xl font-bold text-red-800 mb-2">ปุ่มนี้แหละ!</p>
+                  <p class="text-lg text-gray-700">กดปุ่ม "💾 บันทึกเมนู" สีน้ำเงิน</p>
+                  <p class="text-lg text-gray-700">อยู่ <strong>ด้านบนขวา</strong> ของหน้าจัดการเมนู</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300">
+            <p class="text-lg font-semibold text-yellow-800">⚠️ สำคัญ: กดปุ่มนี้ทุกครั้งหลังแก้ไขเมนู!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Staff Section -->
+    <div class="mb-12">
+      <h2 class="text-3xl font-bold mb-6 text-green-600 flex items-center">
+        <span class="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">S</span>
+        ฝั่ง Staff (staff.html)
+      </h2>
+      
+      <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+        <!-- Mock Staff Navbar -->
+        <div class="highlight-box bg-indigo-600 text-white p-4 relative">
+          <div class="absolute -top-12 right-32 arrow">
+            <div class="text-6xl">👇</div>
+          </div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h1 class="text-xl font-semibold">🍱 ระบบสั่งอาหารพนักงาน</h1>
+              <p class="text-sm opacity-80 mt-1">เมนูทั้งหมด 12 รายการ | อัปเดตล่าสุด: 14:30:25</p>
+            </div>
+            <div class="flex gap-2">
+              <!-- ปุ่มนี้แหละ! -->
+              <button class="bg-green-500 px-6 py-3 rounded-lg hover:bg-green-600 flex items-center gap-2 text-lg font-bold shadow-lg transform scale-110">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                🔄 อัปเดตเมนู
+              </button>
+              <button class="bg-red-500 px-6 py-3 rounded-lg hover:bg-red-600">ออกจากระบบ</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="bg-red-100 border-4 border-red-500 p-6 rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="text-6xl">👆</div>
+              <div>
+                <p class="text-2xl font-bold text-red-800 mb-2">ปุ่มนี้แหละ!</p>
+                <p class="text-lg text-gray-700">กดปุ่ม "🔄 อัปเดตเมนู" สีเขียว</p>
+                <p class="text-lg text-gray-700">อยู่ที่ <strong>Navbar ด้านบน</strong> ข้างๆ ปุ่มออกจากระบบ</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 bg-blue-50 p-4 rounded-lg border-2 border-blue-300">
+            <p class="text-lg font-semibold text-blue-800">💡 เคล็ดลับ: กดปุ่มนี้เมื่อต้องการดูเมนูใหม่จาก Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step by Step -->
+    <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-2xl p-8">
+      <h2 class="text-3xl font-bold mb-6 text-center">📝 ขั้นตอนการใช้งาน</h2>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- Admin Steps -->
+        <div class="bg-white bg-opacity-20 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 flex items-center">
+            <span class="bg-white text-purple-600 rounded-full w-10 h-10 flex items-center justify-center mr-3">1</span>
+            Admin
+          </h3>
+          <div class="space-y-3 text-lg">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">📝</span>
+              <p>เพิ่ม/แก้ไข/ลบเมนู</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">💾</span>
+              <p><strong>กดปุ่ม "บันทึกเมนู"</strong> (ด้านบนขวา)</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">✅</span>
+              <p>เห็นการแจ้งเตือน "บันทึกสำเร็จ"</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Staff Steps -->
+        <div class="bg-white bg-opacity-20 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 flex items-center">
+            <span class="bg-white text-pink-600 rounded-full w-10 h-10 flex items-center justify-center mr-3">2</span>
+            Staff
+          </h3>
+          <div class="space-y-3 text-lg">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">👀</span>
+              <p>ดูที่ Navbar ด้านบน</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">🔄</span>
+              <p><strong>กดปุ่ม "อัปเดตเมนู"</strong> (สีเขียว)</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">🎉</span>
+              <p>เห็นเมนูใหม่ปรากฏ!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <div class="bg-blue-500 text-white p-6 rounded-xl shadow-lg">
+        <div class="text-4xl mb-3">💾</div>
+        <h3 class="text-xl font-bold mb-2">Admin</h3>
+        <p>ปุ่มสีน้ำเงิน</p>
+        <p class="text-sm opacity-90">ด้านบนขวา</p>
+      </div>
+      
+      <div class="bg-green-500 text-white p-6 rounded-xl shadow-lg">
+        <div class="text-4xl mb-3">🔄</div>
+        <h3 class="text-xl font-bold mb-2">Staff</h3>
+        <p>ปุ่มสีเขียว</p>
+        <p class="text-sm opacity-90">Navbar ด้านบน</p>
+      </div>
+      
+      <div class="bg-purple-500 text-white p-6 rounded-xl shadow-lg">
+        <div class="text-4xl mb-3">⏱️</div>
+        <h3 class="text-xl font-bold mb-2">Auto-sync</h3>
+        <p>รออัตโนมัติ</p>
+        <p class="text-sm opacity-90">2-3 วินาที</p>
+      </div>
+    </div>
+
+    <!-- Still Can't Find? -->
+    <div class="mt-12 bg-red-50 border-4 border-red-300 rounded-xl p-8">
+      <h2 class="text-2xl font-bold text-red-800 mb-4 flex items-center">
+        <span class="text-4xl mr-3">❓</span>
+        ยังหาไม่เจออยู่ใช่ไหม?
+      </h2>
+      <div class="space-y-4 text-lg text-gray-700">
+        <p><strong>วิธีที่ 1:</strong> เปิดไฟล์ <code class="bg-gray-200 px-2 py-1 rounded">test_menu_sync.html</code> เพื่อทดสอบ</p>
+        <p><strong>วิธีที่ 2:</strong> กด F12 เปิด Console แล้วพิมพ์:</p>
+        <div class="bg-gray-800 text-green-400 p-4 rounded font-mono">
+          localStorage.getItem('menuData')
+        </div>
+        <p><strong>วิธีที่ 3:</strong> กด Ctrl+F (หรือ Cmd+F) แล้วค้นหา "อัปเดตเมนู"</p>
+        <p><strong>วิธีที่ 4:</strong> ดูภาพหน้าจอด้านบน ↑↑↑</p>
+      </div>
+    </div>
+
+    <!-- Screenshot Placeholder -->
+    <div class="mt-12 text-center">
+      <p class="text-xl text-gray-600 mb-4">📸 ถ้ายังหาไม่เจอ ส่งภาพหน้าจอมาให้ดูได้นะครับ</p>
+      <div class="flex justify-center gap-4">
+        <a href="admin.html" target="_blank" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 text-lg font-bold">
+          เปิด Admin
+        </a>
+        <a href="staff.html" target="_blank" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 text-lg font-bold">
+          เปิด Staff
+        </a>
+        <a href="test_menu_sync.html" target="_blank" class="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 text-lg font-bold">
+          ทดสอบระบบ
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
