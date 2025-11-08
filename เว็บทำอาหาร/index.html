@@ -9,7 +9,12 @@
 <body class="bg-gray-100 flex items-center justify-center h-screen">
 
   <div class="bg-white shadow-lg rounded-2xl p-8 w-96 text-center">
+
+   
+    <img src="ป้ายบน.png" alt="Logo" class="mx-auto mb-4 w-120 h-50 object-contain">
+
     <h1 class="text-2xl font-bold mb-6 text-gray-800">เข้าสู่ระบบสั่งอาหาร</h1>
+
     <form id="loginForm">
       <input type="text" id="username" placeholder="ชื่อผู้ใช้" class="w-full p-3 border rounded mb-3 focus:ring focus:ring-indigo-200" required>
       <input type="password" id="password" placeholder="รหัสผ่าน" class="w-full p-3 border rounded mb-3 focus:ring focus:ring-indigo-200" required>
@@ -28,19 +33,17 @@
     const loginForm = document.getElementById('loginForm');
     const message = document.getElementById('message');
 
-        loginForm.addEventListener('submit', function(e) {
+    loginForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
       const role = document.getElementById('role').value;
 
-      // แสดงข้อมูลผู้ใช้ทั้งหมดใน console เพื่อ debug
       console.log('Current users in storage:', JSON.parse(localStorage.getItem('restaurant_users') || '[]'));
       
       const user = login(username, password, role);
       if (user) {
         console.log('Login successful:', user);
-        // show non-blocking toast and let user choose to navigate
         if (typeof _createAuthToast === 'function') {
           const label = user && user.username ? user.username : 'ผู้ใช้';
           _createAuthToast(label + ' เข้าสู่ระบบสำเร็จ', [
