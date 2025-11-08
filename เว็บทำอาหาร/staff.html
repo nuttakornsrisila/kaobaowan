@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAOBAOWAN - Staff Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+  <script src="auth.js"></script>
+  <style>
+    body { 
+      font-family: 'Prompt', sans-serif;
+      background-color: #FAF9F7;
+      color: #2F2F2F;
+      font-weight: 400;
+    }
+    .card-hover {
+      transition: all 200ms ease;
+    }
+    .card-hover:hover {
+      background-color: #FBEAEA;
+    }
+    .btn-primary {
+      background-color: #D8504C;
+      transition: all 200ms ease;
+    }
+    .btn-primary:hover {
+      background-color: #FBEAEA;
+      color: #D8504C;
+    }
+    .btn-secondary {
+      border: 1px solid #E5E4E2;
+      color: #2F2F2F;
+      background-color: #F3F2EF;
+      transition: all 200ms ease;
+    }
+    .btn-secondary:hover {
+      background-color: #FBEAEA;
+      border-color: #D8504C;
+      color: #D8504C;
+    }
+    .price-badge {
+      background-color: #FFE7A0;
+      color: #D8504C;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="p-4" style="background-color: #FAF9F7; border-bottom: 1px solid #E5E4E2;">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <!-- โลโก้ KAOBAOWAN -->
+        <img src="รูปโลโก้/ป้ายบน.png" alt="KAOBAOWAN Logo" class="h-14" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <!-- Fallback ถ้ารูปโหลดไม่ได้ -->
+        <div class="flex items-center gap-2" style="display: none;">
+          <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+            <span class="text-2xl">🍗</span>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-red-600" style="font-family: Impact, sans-serif;">KAOBAOWAN</h1>
+            <p class="text-xs font-semibold text-gray-800">เก้าเบาหวาน</p>
+          </div>
+        </div>
+        <div class="border-l-2 border-gray-700 h-12 mx-2"></div>
+        <div>
+          <p class="text-sm font-semibold">ระบบสั่งอาหารพนักงาน</p>
+          <p class="text-xs opacity-80" id="menuInfo">กำลังโหลดเมนู...</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="loadMenuFromStorage(true); loadPromosFromStorage(true);" class="px-4 py-2 rounded-xl transition" style="min-height: 44px; border: 1px solid #E5E4E2; color: #2F2F2F; background-color: #F3F2EF;">
+          🔄 อัปเดตเมนู
+        </button>
+        <button onclick="logout()" class="btn-primary text-white px-4 py-2 rounded-xl" style="min-height: 44px; font-weight: 600;">
+          ออกจากระบบ
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto mt-6 p-4">
+    
+    <!-- แท็บเลือก -->
+    <div class="flex gap-3 mb-8">
+      <button onclick="showTab('menu')" id="menuTabBtn" class="flex-1 px-6 py-3 rounded-xl btn-primary text-white" style="min-height: 48px; font-weight: 600;">
+        🍔 เมนูอาหาร
+      </button>
+      <button onclick="showTab('promo')" id="promoTabBtn" class="flex-1 px-6 py-3 rounded-xl btn-secondary" style="min-height: 48px; font-weight: 600;">
+        🔥 โปรโมชั่น
+      </button>
+    </div>
+
+    <!-- Menu Section -->
+    <div id="menuSection">
+      <h2 class="text-2xl mb-6" style="color: #D8504C; font-weight: 600;">
+        เมนูอาหาร
+      </h2>
+      <div class="menuContainer grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- เมนูแต่ละรายการ -->
+      </div>
+    </div>
+
+    <!-- Promotion Section -->
+    <div id="promoSection" class="hidden">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">🔥 โปรโมชั่นพิเศษ</h2>
+      <div id="promoContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- โปรโมชั่นจะถูกโหลดที่นี่ -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Summary -->
+  <div id="orderSummary" class="fixed bottom-0 left-0 w-full bg-yellow-400 text-gray-900 shadow-lg p-4 hidden border-t-4 border-red-600">
+    <div class="max-w-7xl mx-auto">
+      <h2 class="text-xl font-bold mb-2">🧾 สรุปออเดอร์</h2>
+      <ul id="orderList" class="text-gray-900 mb-2"></ul>
+      <p class="text-lg font-bold">ยอดรวม: <span id="total">0</span> บาท</p>
+      <button onclick="submitOrder()" class="bg-red-600 text-white px-6 py-2 rounded mt-3 hover:bg-red-700 font-bold">
+        ✅ ยืนยันออเดอร์
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // โหลดเมนูและโปรโมชั่นจาก localStorage (ซิงค์กับ Admin)
+    let menuItems = [];
+    let promoItems = [];
+    let lastMenuUpdateTime = null;
+    
+    function loadMenuFromStorage(showNotification = false) {
+      const savedMenu = localStorage.getItem("menuData");
+      const previousCount = menuItems.length;
+      
+      if (savedMenu) {
+        menuItems = JSON.parse(savedMenu);
+        lastMenuUpdateTime = new Date().toLocaleString();
+      } else {
+        // เมนูเริ่มต้นถ้ายังไม่มีข้อมูล (ใช้ img เหมือน admin)
+        menuItems = [
+          { id: 1, name: "น่องไก่เล็ก", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+          { id: 2, name: "ปีกไก่", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+          { id: 3, name: "น่องไก่ใหญ่", price: 29, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+          { id: 4, name: "ไก่ไร้กระดูก", price: 12, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+          { id: 5, name: "สะโพกไก่", price: 39, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
+          { id: 6, name: "ข้าวหน้าไก่ทอดเก๊า", price: 49, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" }
+        ];
+      }
+      
+      renderMenu();
+      
+      // แสดงการแจ้งเตือนถ้าเรียกจากปุ่ม
+      if (showNotification) {
+        const currentCount = menuItems.length;
+        const changeText = currentCount !== previousCount 
+          ? ` (${previousCount} → ${currentCount} รายการ)` 
+          : '';
+        alert(`✅ อัปเดตเมนูสำเร็จ${changeText}`);
+      }
+    }
+
+    const menuContainer = document.querySelector(".menuContainer");
+    const orderSummary = document.getElementById("orderSummary");
+    const orderList = document.getElementById("orderList");
+    const totalDisplay = document.getElementById("total");
+
+    let order = [];
+
+    // แสดงเมนูทั้งหมด
+    function renderMenu() {
+      menuContainer.innerHTML = "";
+      
+      // อัปเดตข้อมูลเมนูที่ navbar
+      const menuInfo = document.getElementById('menuInfo');
+      if (menuInfo) {
+        menuInfo.textContent = `เมนูทั้งหมด ${menuItems.length} รายการ${lastMenuUpdateTime ? ' | อัปเดตล่าสุด: ' + lastMenuUpdateTime : ''}`;
+      }
+      
+      if (menuItems.length === 0) {
+        menuContainer.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <p class="text-gray-600 text-lg mb-4">❌ ยังไม่มีเมนูในระบบ</p>
+            <button onclick="loadMenuFromStorage(true)" class="bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg hover:bg-yellow-300 font-bold">
+              🔄 โหลดเมนูใหม่
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      menuItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition";
+        
+        // รองรับทั้ง emoji และ img (ซิงค์กับ admin)
+        let imageHTML = '';
+        if (item.emoji) {
+          imageHTML = `<div class="text-5xl mb-3">${item.emoji}</div>`;
+        } else if (item.img) {
+          imageHTML = `<img src="${item.img}" alt="${item.name}" class="w-24 h-24 mb-3 object-cover rounded">`;
+        } else {
+          imageHTML = `<div class="text-5xl mb-3">🍽️</div>`;
+        }
+        
+        const sizeText = item.size ? ` (${item.size})` : "";
+        
+        card.innerHTML = `
+          ${imageHTML}
+          <h2 class="font-semibold text-center">${item.name}${sizeText}</h2>
+          <p class="text-gray-600 mb-3">${item.price} บาท</p>
+          <button class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold shadow-md hover:shadow-lg transition-all" onclick="addToOrder(${item.id})">
+            ➕ เพิ่ม
+          </button>
+        `;
+        menuContainer.appendChild(card);
+      });
+    }
+
+    // ฟังก์ชันโหลดโปรโมชั่นจาก localStorage
+    function loadPromosFromStorage(showNotification = false) {
+      const savedPromos = localStorage.getItem("promoData");
+      const previousCount = promoItems.length;
+      
+      if (savedPromos) {
+        promoItems = JSON.parse(savedPromos);
+      } else {
+        promoItems = [];
+      }
+      
+      renderPromos();
+      
+      if (showNotification && previousCount !== promoItems.length) {
+        alert(`✅ อัปเดตโปรโมชั่นสำเร็จ (${promoItems.length} รายการ)`);
+      }
+    }
+    
+    // ฟังก์ชันแสดงโปรโมชั่น
+    function renderPromos() {
+      const promoContainer = document.getElementById('promoContainer');
+      if (!promoContainer) return;
+      
+      promoContainer.innerHTML = "";
+      
+      if (promoItems.length === 0) {
+        promoContainer.innerHTML = `
+          <div class="col-span-full text-center py-8">
+            <p class="text-gray-600">ยังไม่มีโปรโมชั่นในขณะนี้</p>
+          </div>
+        `;
+        return;
+      }
+      
+      promoItems.forEach(promo => {
+        const promoCard = document.createElement("div");
+        promoCard.className = "bg-gradient-to-br from-yellow-400 to-orange-400 rounded-xl shadow-lg p-4";
+        
+        // แสดงรูปภาพถ้ามี
+        let imageHTML = '';
+        if (promo.image) {
+          imageHTML = `<img src="${promo.image}" alt="${promo.name}" class="w-full h-32 object-cover rounded-lg mb-3">`;
+        }
+        
+        let optionsHTML = '';
+        promo.options.forEach(opt => {
+          optionsHTML += `
+            <button 
+              class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-bold mb-2"
+              onclick="addToOrder(${promo.id})"
+            >
+              ${opt.label}
+            </button>
+          `;
+        });
+        
+        promoCard.innerHTML = `
+          ${imageHTML}
+          <h3 class="font-bold text-xl text-gray-800 mb-3">${promo.name}</h3>
+          ${optionsHTML}
+        `;
+        
+        promoContainer.appendChild(promoCard);
+      });
+    }
+    
+    // ฟังก์ชันสลับแท็บ
+    function showTab(tab) {
+      const menuSection = document.getElementById('menuSection');
+      const promoSection = document.getElementById('promoSection');
+      const menuTabBtn = document.getElementById('menuTabBtn');
+      const promoTabBtn = document.getElementById('promoTabBtn');
+      
+      if (tab === 'menu') {
+        menuSection.classList.remove('hidden');
+        promoSection.classList.add('hidden');
+        menuTabBtn.className = 'flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold text-lg shadow-lg hover:bg-red-700 transition-all border-2 border-red-700';
+        menuTabBtn.innerHTML = '🍔 จัดการเมนู';
+        promoTabBtn.className = 'flex-1 px-6 py-3 rounded-xl bg-white text-gray-900 font-bold text-lg shadow-lg hover:bg-gray-50 transition-all border-2 border-red-600';
+        promoTabBtn.innerHTML = '<span style="color: #1f2937;">🔥 จัดการโปรโมชั่น</span>';
+      } else {
+        menuSection.classList.add('hidden');
+        promoSection.classList.remove('hidden');
+        menuTabBtn.className = 'flex-1 px-6 py-3 rounded-xl bg-white text-gray-900 font-bold text-lg shadow-lg hover:bg-gray-50 transition-all border-2 border-red-600';
+        menuTabBtn.innerHTML = '<span style="color: #1f2937;">🍔 จัดการเมนู</span>';
+        promoTabBtn.className = 'flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold text-lg shadow-lg hover:bg-red-700 transition-all border-2 border-red-700';
+        promoTabBtn.innerHTML = '🔥 จัดการโปรโมชั่น';
+      }
+    }
+    
+    // โหลดเมนูและโปรโมชั่นเมื่อเริ่มต้น
+    loadMenuFromStorage();
+    loadPromosFromStorage();
+    
+    // อัปเดตสถานะ online ของผู้ใช้
+    function updateOnlineStatus() {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        const now = Date.now();
+        localStorage.setItem(`last_login_${currentUser.username}`, now.toString());
+        
+        const onlineUsers = JSON.parse(localStorage.getItem('online_users') || '[]');
+        const filteredUsers = onlineUsers.filter(u => u.username !== currentUser.username);
+        
+        filteredUsers.push({
+          username: currentUser.username,
+          role: currentUser.role,
+          lastActive: now,
+          loginTime: onlineUsers.find(u => u.username === currentUser.username)?.loginTime || now
+        });
+        
+        const activeUsers = filteredUsers.filter(u => (now - u.lastActive) < 120000);
+        localStorage.setItem('online_users', JSON.stringify(activeUsers));
+      }
+    }
+    
+    updateOnlineStatus();
+    setInterval(updateOnlineStatus, 10000);
+    
+    window.addEventListener('beforeunload', function() {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        const onlineUsers = JSON.parse(localStorage.getItem('online_users') || '[]');
+        const filteredUsers = onlineUsers.filter(u => u.username !== currentUser.username);
+        localStorage.setItem('online_users', JSON.stringify(filteredUsers));
+      }
+    });
+
+    // ฟังการเปลี่ยนแปลงของ localStorage
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'menuData') {
+        loadMenuFromStorage();
+      } else if (e.key === 'promoData') {
+        loadPromosFromStorage();
+      }
+    });
+
+    // เพิ่มรายการอาหาร
+    function addToOrder(id) {
+      const item = menuItems.find(i => i.id === id);
+      const existing = order.find(o => o.id === id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        order.push({ ...item, qty: 1 });
+      }
+      updateOrderSummary();
+    }
+
+    // อัปเดตตะกร้า
+    function updateOrderSummary() {
+      orderList.innerHTML = "";
+      let total = 0;
+      order.forEach(item => {
+        total += item.price * item.qty;
+        const sizeText = item.size ? ` (${item.size})` : "";
+        orderList.innerHTML += `
+          <li class="flex justify-between items-center mb-1">
+            ${item.name}${sizeText} x${item.qty}
+            <button onclick="removeItem(${item.id})" class="text-red-300 ml-2">✕</button>
+          </li>
+        `;
+      });
+      totalDisplay.textContent = total;
+      orderSummary.classList.toggle("hidden", order.length === 0);
+    }
+
+    // ลบรายการ
+    function removeItem(id) {
+      order = order.filter(i => i.id !== id);
+      updateOrderSummary();
+    }
+
+    // ยืนยันออเดอร์
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-srnh1BVST64Txo_LaNFxhdsVkdlr7KHMd3BXkTTOTCph9TZydzm9S9NpC4bkaZUSlQ/exec";
+    window.WEB_APP_URL = WEB_APP_URL;
+
+    async function submitOrder() {
+      if (order.length === 0) return alert("ยังไม่มีรายการอาหาร");
+
+      const currentUser = getCurrentUser();
+      
+      const orderData = {
+        action: 'createPending',
+        timestamp: new Date().toLocaleString(),
+        items: order,
+        total: totalDisplay.textContent,
+        orderedBy: currentUser ? (currentUser.name || currentUser.username) : 'guest',
+        username: currentUser ? currentUser.username : 'guest'
+      };
+
+      if (currentUser) {
+        const allOrders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+        allOrders.push({
+          id: Date.now(),
+          timestamp: new Date().toLocaleString(),
+          username: currentUser.username,
+          orderedBy: currentUser.username,
+          items: order,
+          total: totalDisplay.textContent
+        });
+        localStorage.setItem('allOrders', JSON.stringify(allOrders));
+      }
+
+      if (WEB_APP_URL && !WEB_APP_URL.includes('REPLACE_WITH_YOUR_WEB_APP_URL')) {
+        try {
+          await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(orderData)
+          });
+        } catch (err) {
+          console.warn('ไม่สามารถส่งข้อมูลไปยัง Google Sheets:', err);
+        }
+      }
+      
+      alert("ส่งออเดอร์เรียบร้อย ✅");
+      order = [];
+      updateOrderSummary();
+    }
+  </script>
+</body>
+</html>
