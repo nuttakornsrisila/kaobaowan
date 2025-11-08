@@ -575,6 +575,11 @@
     <!-- Section ประวัติออเดอร์ที่จบแล้ว -->
     <section id="historySection" class="hidden">
       <h2 class="text-2xl font-semibold mb-4">📜 ประวัติออเดอร์ที่จบแล้ว</h2>
+
+      <button onclick="clearAllHistory()"
+        class="mb-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+        🗑️ เคลียร์บิลออเดอร์ทั้งหมด
+      </button>
       <div id="historyContainer" class="bg-white p-4 rounded shadow space-y-4"></div>
     </section>
 
@@ -1666,6 +1671,18 @@
         `;
       });
     }
+    function clearAllHistory() {
+      if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการล้างประวัติออเดอร์ทั้งหมด?")) return;
+
+      localStorage.removeItem("allOrders");
+      localStorage.removeItem("completedOrders");
+
+      allOrders = [];
+      completedOrders = [];
+      renderHistory()
+      alert("✅ ล้างประวัติออเดอร์ทั้งหมดเรียบร้อยแล้ว");
+    }
+
     function confirmOrder(index) {
       const confirmed = confirm("คุณต้องการยืนยันออเดอร์นี้หรือไม่?");
       if (!confirmed) return;
