@@ -52,32 +52,25 @@
 <body>
 
   <!-- Navbar -->
-  <nav class="p-4" style="background-color: #FAF9F7; border-bottom: 1px solid #E5E4E2;">
+  <nav class="py-4 px-6" style="background-color: #FAF9F7; border-bottom: 1px solid #E5E4E2;">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <!-- โลโก้ KAOBAOWAN -->
-        <img src="รูปโลโก้/ป้ายบน.png" alt="KAOBAOWAN Logo" class="h-14" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <!-- Fallback ถ้ารูปโหลดไม่ได้ -->
-        <div class="flex items-center gap-2" style="display: none;">
-          <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-            <span class="text-2xl">🍗</span>
-          </div>
-          <div>
-            <h1 class="text-xl font-bold text-red-600" style="font-family: Impact, sans-serif;">KAOBAOWAN</h1>
-            <p class="text-xs font-semibold text-gray-800">เก้าเบาหวาน</p>
-          </div>
-        </div>
-        <div class="border-l-2 border-gray-700 h-12 mx-2"></div>
-        <div>
-          <p class="text-sm font-semibold">ระบบสั่งอาหารพนักงาน</p>
-          <p class="text-xs opacity-80" id="menuInfo">กำลังโหลดเมนู...</p>
-        </div>
+      <!-- Logo Left -->
+      <div class="flex items-center gap-4">
+        <img src="รูปโลโก้/ป้ายบน.png" alt="KAOBAOWAN" class="h-10 opacity-90" onerror="this.style.display='none';">
       </div>
+      
+      <!-- Center Title -->
+      <div class="text-center">
+        <h1 class="text-lg" style="color: #D8504C; font-weight: 600;">ระบบสั่งอาหารพนักงาน</h1>
+        <p class="text-xs opacity-60" id="menuInfo" style="color: #2F2F2F;">KAOBAOWAN</p>
+      </div>
+      
+      <!-- Right Buttons -->
       <div class="flex gap-3">
-        <button onclick="loadMenuFromStorage(true); loadPromosFromStorage(true);" class="px-4 py-2 rounded-xl transition" style="min-height: 44px; border: 1px solid #E5E4E2; color: #2F2F2F; background-color: #F3F2EF;">
+        <button onclick="loadMenuFromStorage(true); loadPromosFromStorage(true);" class="px-5 py-2 rounded-xl transition" style="min-height: 44px; border: 1px solid #E5E4E2; color: #2F2F2F; background-color: #F3F2EF; font-weight: 500;">
           🔄 อัปเดตเมนู
         </button>
-        <button onclick="logout()" class="btn-primary text-white px-4 py-2 rounded-xl" style="min-height: 44px; font-weight: 600;">
+        <button onclick="logout()" class="btn-primary text-white px-5 py-2 rounded-xl" style="min-height: 44px; font-weight: 600;">
           ออกจากระบบ
         </button>
       </div>
@@ -116,14 +109,16 @@
     </div>
   </div>
 
-  <!-- Order Summary -->
-  <div id="orderSummary" class="fixed bottom-0 left-0 w-full bg-yellow-400 text-gray-900 shadow-lg p-4 hidden border-t-4 border-red-600">
+  <!-- Order Summary Bar (Fixed Bottom) -->
+  <div id="orderSummary" class="fixed bottom-0 left-0 w-full p-5 hidden" style="background-color: #F3F2EF; border-top: 2px solid #D8504C; box-shadow: 0 -4px 12px rgba(0,0,0,0.05);">
     <div class="max-w-7xl mx-auto">
-      <h2 class="text-xl font-bold mb-2">🧾 สรุปออเดอร์</h2>
-      <ul id="orderList" class="text-gray-900 mb-2"></ul>
-      <p class="text-lg font-bold">ยอดรวม: <span id="total">0</span> บาท</p>
-      <button onclick="submitOrder()" class="bg-red-600 text-white px-6 py-2 rounded mt-3 hover:bg-red-700 font-bold">
-        ✅ ยืนยันออเดอร์
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg" style="color: #2F2F2F; font-weight: 600;">🧾 สรุปออเดอร์</h2>
+        <p class="text-xl" style="color: #D8504C; font-weight: 600;">ยอดรวม: <span id="total">0</span> บาท</p>
+      </div>
+      <ul id="orderList" class="mb-3" style="color: #2F2F2F;"></ul>
+      <button onclick="submitOrder()" class="btn-primary text-white px-8 py-3 rounded-xl w-full" style="font-weight: 600;">
+        ยืนยันออเดอร์
       </button>
     </div>
   </div>
@@ -196,26 +191,28 @@
 
       menuItems.forEach(item => {
         const card = document.createElement("div");
-        card.className = "bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition";
+        card.className = "rounded-2xl p-5 flex flex-col items-center card-hover";
+        card.style.backgroundColor = "#F3F2EF";
+        card.style.border = "1px solid #E5E4E2";
         
         // รองรับทั้ง emoji และ img (ซิงค์กับ admin)
         let imageHTML = '';
         if (item.emoji) {
           imageHTML = `<div class="text-5xl mb-3">${item.emoji}</div>`;
         } else if (item.img) {
-          imageHTML = `<img src="${item.img}" alt="${item.name}" class="w-24 h-24 mb-3 object-cover rounded">`;
+          imageHTML = `<img src="${item.img}" alt="${item.name}" class="w-24 h-24 mb-3 object-cover rounded-full" style="border: 2px solid #E5E4E2;">`;
         } else {
-          imageHTML = `<div class="text-5xl mb-3">🍽️</div>`;
+          imageHTML = `<div class="w-24 h-24 mb-3 bg-white rounded-full flex items-center justify-center text-4xl" style="border: 2px solid #E5E4E2;">🍽️</div>`;
         }
         
         const sizeText = item.size ? ` (${item.size})` : "";
         
         card.innerHTML = `
           ${imageHTML}
-          <h2 class="font-semibold text-center">${item.name}${sizeText}</h2>
-          <p class="text-gray-600 mb-3">${item.price} บาท</p>
-          <button class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold shadow-md hover:shadow-lg transition-all" onclick="addToOrder(${item.id})">
-            ➕ เพิ่ม
+          <h2 class="text-center mb-2" style="color: #2F2F2F; font-weight: 600;">${item.name}${sizeText}</h2>
+          <div class="price-badge mb-3">${item.price} บาท</div>
+          <button class="btn-primary text-white px-6 py-2 rounded-xl transition" style="font-weight: 600;" onclick="addToOrder(${item.id})">
+            เพิ่ม
           </button>
         `;
         menuContainer.appendChild(card);
@@ -258,19 +255,22 @@
       
       promoItems.forEach(promo => {
         const promoCard = document.createElement("div");
-        promoCard.className = "bg-gradient-to-br from-yellow-400 to-orange-400 rounded-xl shadow-lg p-4";
+        promoCard.className = "rounded-2xl p-5 card-hover";
+        promoCard.style.backgroundColor = "#FFE7A0";
+        promoCard.style.border = "2px solid #D8504C";
         
         // แสดงรูปภาพถ้ามี
         let imageHTML = '';
         if (promo.image) {
-          imageHTML = `<img src="${promo.image}" alt="${promo.name}" class="w-full h-32 object-cover rounded-lg mb-3">`;
+          imageHTML = `<img src="${promo.image}" alt="${promo.name}" class="w-full h-32 object-cover rounded-xl mb-3" style="border: 1px solid #E5E4E2;">`;
         }
         
         let optionsHTML = '';
         promo.options.forEach(opt => {
           optionsHTML += `
             <button 
-              class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-bold mb-2"
+              class="w-full btn-primary text-white px-4 py-2 rounded-xl mb-2 transition"
+              style="font-weight: 600;"
               onclick="addToOrder(${promo.id})"
             >
               ${opt.label}
@@ -280,7 +280,7 @@
         
         promoCard.innerHTML = `
           ${imageHTML}
-          <h3 class="font-bold text-xl text-gray-800 mb-3">${promo.name}</h3>
+          <h3 class="text-lg mb-3" style="color: #D8504C; font-weight: 600;">${promo.name}</h3>
           ${optionsHTML}
         `;
         
