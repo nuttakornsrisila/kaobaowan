@@ -1564,7 +1564,7 @@
     function updateReport(){
       const reportSection=document.getElementById("reportSection");
       reportSection.innerHTML=`<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>
-        <div class="mb-3"><button onclick="loadPendingFromSheet()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">โหลดคำสั่งค้างจาก Google Sheet</button></div>`;
+        <div class="mb-3"><button onclick="loadPendingFromSheet()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">ส่งข้อมูลเข้า Google Sheet</button></div>`;
       if(pendingOrders.length===0){ reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; return; }
       let totalIncome=0;
       const container=document.createElement("div");
