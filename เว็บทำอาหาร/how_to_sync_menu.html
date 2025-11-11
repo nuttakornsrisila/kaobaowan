@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>วิธีการ Sync เมนู - คู่มือภาพ</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .step {
+      transition: all 0.3s;
+    }
+    .step:hover {
+      transform: scale(1.02);
+    }
+    .highlight {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-800 mb-4">📖 วิธีการ Sync เมนูระหว่าง Admin และ Staff</h1>
+      <p class="text-xl text-gray-600">คู่มือแบบภาพประกอบ ทำตามได้ง่ายๆ</p>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step bg-white rounded-xl shadow-lg p-8 mb-8">
+      <div class="flex items-center mb-6">
+        <div class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold mr-4">1</div>
+        <h2 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบด้วย Admin</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h3 class="font-semibold mb-3 text-lg">📝 ขั้นตอน:</h3>
+          <ol class="list-decimal list-inside space-y-2 text-gray-700">
+            <li>เปิดไฟล์ <code class="bg-gray-200 px-2 py-1 rounded">index.html</code></li>
+            <li>ใส่ Username: <code class="bg-blue-100 px-2 py-1 rounded">admin</code></li>
+            <li>ใส่ Password: <code class="bg-blue-100 px-2 py-1 rounded">admin</code></li>
+            <li>เลือก Role: <strong>Admin</strong></li>
+            <li>กดปุ่ม "เข้าสู่ระบบ"</li>
+          </ol>
+        </div>
+        <div class="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+          <div class="text-center">
+            <div class="text-6xl mb-4">👑</div>
+            <p class="text-lg font-semibold text-blue-800">Admin Panel</p>
+            <p class="text-sm text-gray-600 mt-2">สิทธิ์เต็มในการจัดการเมนู</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step bg-white rounded-xl shadow-lg p-8 mb-8">
+      <div class="flex items-center mb-6">
+        <div class="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold mr-4">2</div>
+        <h2 class="text-2xl font-bold text-gray-800">จัดการเมนูอาหาร</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h3 class="font-semibold mb-3 text-lg">🍽️ ทำได้:</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center">
+              <span class="text-green-500 mr-2">✅</span>
+              <span>เพิ่มเมนูใหม่</span>
+            </li>
+            <li class="flex items-center">
+              <span class="text-blue-500 mr-2">✏️</span>
+              <span>แก้ไขเมนูเดิม</span>
+            </li>
+            <li class="flex items-center">
+              <span class="text-red-500 mr-2">🗑️</span>
+              <span>ลบเมนู</span>
+            </li>
+            <li class="flex items-center">
+              <span class="text-purple-500 mr-2">💰</span>
+              <span>เปลี่ยนราคา</span>
+            </li>
+          </ul>
+        </div>
+        <div class="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+          <h3 class="font-semibold mb-3 text-lg text-yellow-800">⚠️ สำคัญ!</h3>
+          <div class="space-y-2 text-gray-700">
+            <p>หลังจากแก้ไขเมนูแล้ว</p>
+            <p class="text-2xl font-bold text-yellow-800 my-4">ต้องกดปุ่ม</p>
+            <div class="bg-blue-500 text-white px-6 py-3 rounded-lg text-center font-bold text-lg highlight">
+              💾 บันทึกเมนู
+            </div>
+            <p class="text-sm text-gray-600 mt-4">ถ้าไม่กด Staff จะไม่เห็นการเปลี่ยนแปลง!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step bg-white rounded-xl shadow-lg p-8 mb-8">
+      <div class="flex items-center mb-6">
+        <div class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold mr-4">3</div>
+        <h2 class="text-2xl font-bold text-gray-800">บันทึกเมนู (Admin)</h2>
+      </div>
+      <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-lg border-2 border-purple-200">
+        <div class="text-center mb-6">
+          <div class="text-6xl mb-4">💾</div>
+          <h3 class="text-2xl font-bold text-purple-800 mb-2">ขั้นตอนสำคัญที่สุด!</h3>
+        </div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="bg-white p-4 rounded-lg shadow">
+            <div class="text-3xl mb-2">1️⃣</div>
+            <p class="font-semibold">แก้ไขเมนู</p>
+            <p class="text-sm text-gray-600">เพิ่ม/ลบ/แก้ไข</p>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow">
+            <div class="text-3xl mb-2">2️⃣</div>
+            <p class="font-semibold">กดบันทึกเมนู</p>
+            <p class="text-sm text-gray-600">ปุ่มสีน้ำเงิน</p>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow">
+            <div class="text-3xl mb-2">3️⃣</div>
+            <p class="font-semibold">เห็นการแจ้งเตือน</p>
+            <p class="text-sm text-gray-600">✅ บันทึกสำเร็จ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step bg-white rounded-xl shadow-lg p-8 mb-8">
+      <div class="flex items-center mb-6">
+        <div class="bg-indigo-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold mr-4">4</div>
+        <h2 class="text-2xl font-bold text-gray-800">อัปเดตเมนู (Staff)</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h3 class="font-semibold mb-3 text-lg">👤 ฝั่ง Staff:</h3>
+          <ol class="list-decimal list-inside space-y-3 text-gray-700">
+            <li>เข้าสู่ระบบด้วย Staff</li>
+            <li>ดูที่ Navbar ด้านบน</li>
+            <li>กดปุ่ม <span class="bg-green-500 text-white px-2 py-1 rounded">🔄 อัปเดตเมนู</span></li>
+            <li>รอสักครู่</li>
+            <li>เมนูใหม่จะปรากฏ!</li>
+          </ol>
+        </div>
+        <div class="bg-green-50 p-6 rounded-lg border-2 border-green-200">
+          <h3 class="font-semibold mb-3 text-lg text-green-800">🎯 3 วิธีอัปเดต:</h3>
+          <div class="space-y-4">
+            <div class="bg-white p-3 rounded shadow-sm">
+              <p class="font-semibold">1. กดปุ่มด้วยตัวเอง</p>
+              <p class="text-sm text-gray-600">กด "อัปเดตเมนู" ทันที</p>
+            </div>
+            <div class="bg-white p-3 rounded shadow-sm">
+              <p class="font-semibold">2. รออัตโนมัติ</p>
+              <p class="text-sm text-gray-600">รอ 2-3 วินาที ระบบจะอัปเดตเอง</p>
+            </div>
+            <div class="bg-white p-3 rounded shadow-sm">
+              <p class="font-semibold">3. เปิดแท็บใหม่</p>
+              <p class="text-sm text-gray-600">เปิด staff.html ใหม่</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="bg-red-50 rounded-xl shadow-lg p-8 mb-8 border-2 border-red-200">
+      <h2 class="text-2xl font-bold text-red-800 mb-6 flex items-center">
+        <span class="text-3xl mr-3">🔧</span>
+        แก้ปัญหา: เมนูไม่อัปเดต
+      </h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg">
+          <h3 class="font-semibold mb-3 text-red-700">❌ สาเหตุที่พบบ่อย:</h3>
+          <ul class="space-y-2 text-gray-700">
+            <li>• ลืมกดปุ่ม "บันทึกเมนู" ใน Admin</li>
+            <li>• ไม่ได้กดปุ่ม "อัปเดตเมนู" ใน Staff</li>
+            <li>• เปิดหน้าค้างไว้นานเกินไป</li>
+            <li>• Browser cache ไม่อัปเดต</li>
+          </ul>
+        </div>
+        <div class="bg-white p-6 rounded-lg">
+          <h3 class="font-semibold mb-3 text-green-700">✅ วิธีแก้:</h3>
+          <ol class="list-decimal list-inside space-y-2 text-gray-700">
+            <li>กดปุ่ม "บันทึกเมนู" ใน Admin อีกครั้ง</li>
+            <li>กดปุ่ม "อัปเดตเมนู" ใน Staff</li>
+            <li>กด F5 รีเฟรชหน้า</li>
+            <li>เปิด Console (F12) ดู error</li>
+            <li>ลองใช้ไฟล์ test_menu_sync.html</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Reference -->
+    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg p-8">
+      <h2 class="text-3xl font-bold mb-6 text-center">⚡ สรุปสั้นๆ</h2>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <span class="bg-white text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center mr-2">A</span>
+            Admin
+          </h3>
+          <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+            <p class="text-lg mb-2">1. แก้ไขเมนู</p>
+            <p class="text-lg mb-2">2. กด 💾 บันทึกเมนู</p>
+            <p class="text-lg">3. เสร็จ!</p>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <span class="bg-white text-purple-600 rounded-full w-8 h-8 flex items-center justify-center mr-2">S</span>
+            Staff
+          </h3>
+          <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+            <p class="text-lg mb-2">1. กด 🔄 อัปเดตเมนู</p>
+            <p class="text-lg mb-2">2. รอสักครู่</p>
+            <p class="text-lg">3. เห็นเมนูใหม่!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-12 text-gray-600">
+      <p class="text-lg">💡 <strong>เคล็ดลับ:</strong> เปิดไฟล์ <code class="bg-gray-200 px-2 py-1 rounded">test_menu_sync.html</code> เพื่อทดสอบระบบ</p>
+      <p class="mt-2">📖 อ่านเพิ่มเติมที่ <code class="bg-gray-200 px-2 py-1 rounded">MENU_SYNC_GUIDE.md</code></p>
+    </div>
+  </div>
+</body>
+</html>

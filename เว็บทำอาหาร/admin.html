@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAOBAOWAN - Admin Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+  <script src="auth.js"></script>
+  <script>
+    // เช็คว่า auth.js โหลดสำเร็จหรือไม่
+    window.addEventListener('load', function() {
+      if (typeof getUsers === 'function') {
+        console.log('auth.js loaded successfully');
+        // โหลดข้อมูลผู้ใช้เริ่มต้นถ้ายังไม่มี
+        const users = getUsers();
+        console.log('Initial users:', users);
+      } else {
+        console.error('auth.js not loaded correctly!');
+      }
+    });
+  </script>
+  <style>
+    body { 
+      font-family: 'Prompt', sans-serif;
+      background-color: #FAF9F7;
+      color: #2F2F2F;
+      font-weight: 400;
+    }
+    .sidebar-text {
+      transition: opacity 200ms, transform 200ms;
+      white-space: nowrap;
+    }
+    .sidebar-collapsed .sidebar-text {
+      opacity: 0;
+      transform: translateX(-20px);
+      display: none;
+    }
+    .btn-primary {
+      background-color: #D8504C;
+      transition: all 200ms ease;
+    }
+    .btn-primary:hover {
+      background-color: #FBEAEA;
+      color: #D8504C;
+    }
+    .btn-secondary {
+      border: 1px solid #E5E4E2;
+      color: #2F2F2F;
+      transition: all 200ms ease;
+    }
+    .btn-secondary:hover {
+      background-color: #FBEAEA;
+      border-color: #D8504C;
+      color: #D8504C;
+    }
+    .card-hover {
+      transition: all 200ms ease;
+    }
+    .card-hover:hover {
+      background-color: #FBEAEA;
+    }
+  </style>
+</head>
+<body class="flex"></body>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="h-screen p-5 flex flex-col transition-all duration-300 w-64" style="background-color: #F3F2EF; border-right: 1px solid #E5E4E2;">
+    <button onclick="toggleSidebar()" class="mb-4 p-2 rounded-xl transition" style="border: 1px solid #E5E4E2; color: #2F2F2F;">☰</button>
+    <!-- โลโก้ KAOBAOWAN -->
+    <div class="mb-8 text-center sidebar-text">
+      <img src="รูปโลโก้/ป้ายกลม.png" alt="KAOBAOWAN" class="w-20 h-20 mx-auto mb-3 opacity-90">
+      <h1 class="text-base" style="color: #D8504C; font-weight: 600;">Admin Panel</h1>
+      <p class="text-xs mt-1 opacity-60" style="color: #2F2F2F;">KAOBAOWAN</p>
+    </div>
+    <nav class="flex flex-col space-y-1">
+      <button onclick="showSection('menu')" class="flex items-center gap-3 py-3 px-4 rounded-xl transition text-left" style="color: #2F2F2F;">
+        <span>🍔</span>
+        <span class="sidebar-text">จัดการเมนูอาหาร</span>
+      </button>
+      <button onclick="showSection('order')" class="flex items-center gap-3 py-3 px-4 rounded-xl transition text-left" style="color: #2F2F2F;">
+        <span>🛒</span>
+        <span class="sidebar-text">สั่งอาหาร</span>
+      </button>
+      <button onclick="showSection('report')" class="flex items-center gap-3 py-3 px-4 rounded-xl transition text-left" style="color: #2F2F2F;">
+        <span>💰</span>
+        <span class="sidebar-text">รายรับรายจ่าย</span>
+      </button>
+      <button onclick="showSection('history')" class="flex items-center gap-3 py-3 px-4 rounded-xl transition text-left" style="color: #2F2F2F;">
+        <span>📜</span>
+        <span class="sidebar-text">ประวัติออเดอร์</span>
+      </button>
+      <button onclick="showSection('users')" class="flex items-center gap-3 py-3 px-4 rounded-xl transition text-left" style="color: #2F2F2F;">
+        <span>👥</span>
+        <span class="sidebar-text">จัดการผู้ใช้งาน</span>
+      </button>
+      <button onclick="logout()" class="flex items-center gap-3 btn-primary text-white py-3 px-4 rounded-xl mt-auto" style="font-weight: 600;">
+        <span>🚪</span>
+        <span class="sidebar-text">ออกจากระบบ</span>
+      </button>
+
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main id="mainContent" class="flex-1 p-6 transition-all duration-300">
+
+    <!-- Section จัดการเมนูอาหาร (Admin) -->
+    <section id="menuSection">
+      <!-- แท็บเลือก -->
+      <div class="flex gap-2 mb-4">
+        <button onclick="showMenuTab('menu')" id="menuTab" class="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold">
+          🍔 จัดการเมนู
+        </button>
+        <button onclick="showMenuTab('promo')" id="promoTab" class="px-4 py-2 rounded-lg bg-gray-300 text-gray-900 font-semibold hover:bg-gray-400">
+          🔥 จัดการโปรโมชั่น
+        </button>
+      </div>
+
+      <!-- ส่วนจัดการเมนู -->
+      <div id="menuManagement">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-semibold">จัดการเมนูอาหาร</h2>
+          <div class="flex gap-2">
+            <button onclick="saveMenu(); alert('✅ บันทึกเมนูสำเร็จ! พนักงานสามารถกดปุ่ม \'อัปเดตเมนู\' เพื่อดูเมนูใหม่')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+              </svg>
+              บันทึกเมนู
+            </button>
+            <span class="bg-gray-100 px-4 py-2 rounded-lg text-gray-700 flex items-center">
+              📋 เมนูทั้งหมด: <span id="menuCount" class="font-bold ml-2">0</span> รายการ
+            </span>
+          </div>
+        </div>
+
+      <!-- ฟอร์มแก้ไขเมนู (ซ่อนไว้) -->
+      <div id="editMenuForm" class="hidden mb-6 rounded-xl p-6" style="background-color: #FFE7A0; border: 2px solid #D8504C;">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-semibold" style="color: #D8504C;">✏️ แก้ไขเมนู</h3>
+          <button onclick="cancelEdit()" class="text-gray-600 hover:text-red-600 font-bold text-2xl">&times;</button>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: #2F2F2F;">ชื่อเมนู</label>
+            <input type="text" id="editMenuName" class="w-full px-4 py-3 rounded-xl" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: #2F2F2F;">ราคา (บาท)</label>
+            <input type="number" id="editMenuPrice" class="w-full px-4 py-3 rounded-xl" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          </div>
+        </div>
+        
+        <div class="mt-4">
+          <label class="block text-sm font-medium mb-2" style="color: #2F2F2F;">รูปภาพ</label>
+          <div class="flex gap-3 mb-3">
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="none" checked>
+              <span class="ml-2">ไม่เปลี่ยน</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="url">
+              <span class="ml-2">ใช้ URL</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="file">
+              <span class="ml-2">อัปโหลดไฟล์</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="editImageSource" value="remove">
+              <span class="ml-2">ลบรูป</span>
+            </label>
+          </div>
+          <input type="text" id="editImageUrl" placeholder="ลิ้งก์รูปภาพ (URL)" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          <input type="file" id="editImageFile" accept="image/*" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+          <img id="editPreviewImage" src="" alt="Preview" class="w-32 h-32 object-cover rounded-xl mt-2 hidden" style="border: 2px solid #E5E4E2;">
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+          <button onclick="saveEditMenu()" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold flex-1">
+            💾 บันทึกการแก้ไข
+          </button>
+          <button onclick="cancelEdit()" class="btn-secondary px-6 py-3 rounded-xl font-semibold">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+      <div class="overflow-x-auto bg-white rounded-xl shadow-md mb-6">
+        <table class="min-w-full border-collapse">
+          <thead class="bg-indigo-100">
+            <tr>
+              <th class="p-3 border">รูปภาพ</th>
+              <th class="p-3 border">ชื่อเมนู</th>
+              <th class="p-3 border">ราคา (บาท)</th>
+              <th class="p-3 border">การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="menuTable"></tbody>
+        </table>
+      </div>
+      <div class="bg-white shadow-md rounded-xl p-4">
+        <h3 class="text-lg font-semibold mb-3">➕ เพิ่มเมนูใหม่</h3>
+        <form id="addMenuForm" class="grid md:grid-cols-3 gap-3">
+          <input type="text" id="menuName" placeholder="ชื่อเมนู" class="border p-2 rounded" required>
+          <input type="number" id="menuPrice" placeholder="ราคา" class="border p-2 rounded" required>
+
+          <div class="flex flex-col gap-2 md:col-span-3">
+            <label class="block text-sm font-medium">รูปภาพเมนู (ไม่บังคับ)</label>
+            <div class="flex items-center gap-4">
+              <label class="inline-flex items-center"><input type="radio" name="imageSource" id="imageSrcNone" value="none" checked> <span class="ml-2">ไม่ใส่รูป</span></label>
+              <label class="inline-flex items-center"><input type="radio" name="imageSource" id="imageSrcUrl" value="url"> <span class="ml-2">ใช้ลิงก์</span></label>
+              <label class="inline-flex items-center"><input type="radio" name="imageSource" id="imageSrcFile" value="file"> <span class="ml-2">อัปโหลดไฟล์</span></label>
+            </div>
+
+            <input type="text" id="menuImageUrl" placeholder="ลิ้งก์รูปภาพ (URL)" class="border p-2 rounded hidden">
+            <input type="file" id="menuImageFile" accept="image/*" class="border p-2 rounded hidden">
+            <div class="text-sm text-gray-500">เลือกใช้ลิงก์หรืออัปโหลดไฟล์ และตรวจสอบรูปภาพด้วยพรีวิว</div>
+          </div>
+
+          <div class="md:col-span-3 flex items-center gap-4">
+            <img id="previewImage" src="" alt="Preview" class="w-24 h-24 object-cover rounded hidden cursor-pointer" title="คลิกเพื่อขยาย">
+            <div>
+              <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">เพิ่มเมนู</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+      </div>
+
+      <!-- ส่วนจัดการโปรโมชั่น -->
+      <div id="promoManagement" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-semibold">จัดการโปรโมชั่น</h2>
+          <div class="flex gap-2">
+            <button onclick="savePromos(); alert('✅ บันทึกโปรโมชั่นสำเร็จ! พนักงานสามารถกดปุ่ม \'อัปเดตเมนู\' เพื่อดูโปรโมชั่นใหม่')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+              </svg>
+              บันทึกโปรโมชั่น
+            </button>
+            <span class="bg-gray-100 px-4 py-2 rounded-lg text-gray-700 flex items-center">
+              🔥 โปรโมชั่นทั้งหมด: <span id="promoCount" class="font-bold ml-2">0</span> รายการ
+            </span>
+          </div>
+        </div>
+
+        <!-- ฟอร์มแก้ไขโปรโมชั่น (ซ่อนไว้) -->
+        <div id="editPromoForm" class="hidden mb-6 rounded-2xl p-6" style="background-color: #F3F2EF; border: 2px solid #D8504C;">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-semibold" style="color: #D8504C;">✏️ แก้ไขโปรโมชั่น</h3>
+            <button onclick="cancelEditPromo()" class="text-gray-600 hover:text-red-600 font-bold text-3xl leading-none">&times;</button>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <!-- คอลัมน์ซ้าย: ข้อมูลพื้นฐาน -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold mb-2" style="color: #2F2F2F;">ชื่อโปรโมชั่น</label>
+                <input type="text" id="editPromoName" placeholder="เช่น: โปรไก่ชิ้น" class="w-full px-4 py-3 rounded-xl" style="border: 1px solid #E5E4E2; background-color: #FAF9F7; font-size: 16px;">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold mb-2" style="color: #2F2F2F;">รูปภาพโปรโมชั่น</label>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="none" checked class="mr-2">
+                    <span class="text-sm">ไม่เปลี่ยน</span>
+                  </label>
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="url" class="mr-2">
+                    <span class="text-sm">ใช้ URL</span>
+                  </label>
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="file" class="mr-2">
+                    <span class="text-sm">อัปโหลดไฟล์</span>
+                  </label>
+                  <label class="flex items-center p-3 rounded-xl cursor-pointer transition" style="border: 2px solid #E5E4E2; background-color: #FAF9F7;">
+                    <input type="radio" name="editPromoImageSource" value="remove" class="mr-2">
+                    <span class="text-sm">ลบรูป</span>
+                  </label>
+                </div>
+                <input type="text" id="editPromoImageUrl" placeholder="ลิ้งก์รูปภาพ (URL)" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+                <input type="file" id="editPromoImageFile" accept="image/*" class="w-full px-4 py-3 rounded-xl hidden mb-2" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+                <img id="editPromoPreviewImage" src="" alt="Preview" class="w-full h-40 object-cover rounded-xl mt-3 hidden" style="border: 2px solid #E5E4E2;">
+              </div>
+            </div>
+            
+            <!-- คอลัมน์ขวา: ตัวเลือก -->
+            <div>
+              <label class="block text-sm font-semibold mb-2" style="color: #2F2F2F;">ตัวเลือกโปรโมชั่น</label>
+              <div class="rounded-xl p-4 mb-3" style="background-color: #FAF9F7; border: 1px solid #E5E4E2; max-height: 400px; overflow-y: auto;">
+                <div id="editPromoOptionsContainer" class="space-y-2">
+                  <!-- ตัวเลือกจะถูกเพิ่มที่นี่ -->
+                </div>
+              </div>
+              <button type="button" onclick="addEditPromoOption()" class="w-full btn-primary text-white px-4 py-3 rounded-xl font-semibold">
+                ➕ เพิ่มตัวเลือก
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button onclick="saveEditPromo()" class="btn-primary text-white px-8 py-3 rounded-xl font-semibold flex-1" style="font-size: 16px;">
+              💾 บันทึกการแก้ไข
+            </button>
+            <button onclick="cancelEditPromo()" class="btn-secondary px-8 py-3 rounded-xl font-semibold" style="font-size: 16px;">
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+
+        <!-- ตารางโปรโมชั่น -->
+        <div class="overflow-x-auto bg-white rounded-xl shadow-md mb-6">
+          <table class="min-w-full border-collapse">
+            <thead class="bg-orange-100">
+              <tr>
+                <th class="p-3 border">รูปภาพ</th>
+                <th class="p-3 border">ชื่อโปรโมชั่น</th>
+                <th class="p-3 border">ตัวเลือก</th>
+                <th class="p-3 border">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="promoTable"></tbody>
+          </table>
+        </div>
+
+        <!-- ฟอร์มเพิ่มโปรโมชั่น (แบบหลายตัวเลือก) -->
+        <div class="bg-white shadow-md rounded-xl p-4">
+          <h3 class="text-lg font-semibold mb-3">➕ เพิ่มโปรโมชั่นใหม่</h3>
+          
+          <!-- ชื่อโปรโมชั่น -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">ชื่อโปรโมชั่น</label>
+            <input type="text" id="promoGroupName" placeholder="เช่น: โปรไก่ชิ้น" class="w-full border-2 p-2 rounded-lg" required>
+          </div>
+          
+          <!-- รูปภาพโปรโมชั่น (ไม่บังคับ) -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">รูปภาพโปรโมชั่น (ไม่บังคับ)</label>
+            <div class="flex items-center gap-4 mb-2">
+              <label class="inline-flex items-center">
+                <input type="radio" name="promoImageSource" id="promoImageNone" value="none" checked>
+                <span class="ml-2">ไม่ใส่รูป</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="promoImageSource" id="promoImageUrl" value="url">
+                <span class="ml-2">ใช้ลิงก์</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="promoImageSource" id="promoImageFile" value="file">
+                <span class="ml-2">อัปโหลดไฟล์</span>
+              </label>
+            </div>
+            
+            <input type="text" id="promoImageUrlInput" placeholder="ลิ้งก์รูปภาพ (URL)" class="w-full border p-2 rounded hidden mb-2">
+            <input type="file" id="promoImageFileInput" accept="image/*" class="w-full border p-2 rounded hidden mb-2">
+            
+            <img id="promoPreviewImage" src="" alt="Preview" class="w-24 h-24 object-cover rounded hidden cursor-pointer mt-2" title="คลิกเพื่อขยาย">
+          </div>
+          
+          <!-- ตัวเลือกโปรโมชั่น -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">ตัวเลือก</label>
+            <div id="promoOptionsContainer" class="space-y-2">
+              <!-- ตัวเลือกจะถูกเพิ่มที่นี่ -->
+            </div>
+            <button type="button" onclick="addPromoOption()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+              ➕ เพิ่มตัวเลือก
+            </button>
+          </div>
+          
+          <div class="flex gap-2">
+            <button onclick="saveNewPromo()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold">
+              💾 บันทึกโปรโมชั่น
+            </button>
+            <button onclick="clearPromoForm()" class="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500">
+              🔄 ล้างฟอร์ม
+            </button>
+          </div>
+          
+          <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
+            <strong>💡 ตัวอย่าง:</strong><br>
+            ชื่อโปรโมชั่น: "โปรไก่ชิ้น"<br>
+            ตัวเลือก 1: "3 ชิ้น" ราคา 39 บาท<br>
+            ตัวเลือก 2: "6 ชิ้น" ราคา 79 บาท<br>
+            ตัวเลือก 3: "10 ชิ้น" ราคา 129 บาท
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section สั่งอาหาร + โปรโมชั่น -->
+    <section id="orderSection" class="hidden">
+      <h2 class="text-2xl font-semibold mb-4">สั่งอาหาร</h2>
+
+      <!-- โปรโมชั่น -->
+      <section id="promoSection" class="mb-6">
+        <h3 class="text-xl font-semibold mb-2">🔥 โปรโมชั่น</h3>
+        <div id="promoContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- เมนูปกติ -->
+      <div id="orderMenuContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6"></div>
+
+      <!-- Order Summary -->
+      <div id="orderSummary" class="fixed bottom-0 left-64 w-[calc(100%-16rem)] bg-white shadow-md border-t border-gray-200 p-4 hidden">
+        <h2 class="text-lg font-semibold mb-2">🧾 สรุปออเดอร์</h2>
+        <ul id="orderList" class="text-gray-700 mb-2"></ul>
+        <p class="font-semibold">ยอดรวม: <span id="total">0</span> บาท</p>
+        <button onclick="submitOrder()" class="mt-2 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">ยืนยันออเดอร์</button>
+      </div>
+    </section>
+
+    <!-- Section รายรับรายจ่าย -->
+    <section id="reportSection" class="hidden"></section>
+
+    <!-- Section จัดการผู้ใช้งาน -->
+    <section id="usersSection" class="hidden">
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">👥 จัดการผู้ใช้งาน</h2>
+          <div class="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-sm text-green-700 font-medium">Real-time Updates</span>
+          </div>
+        </div>
+        
+        <!-- Google Sheets Link -->
+        <div class="mb-6 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <div>
+                <h3 class="font-bold text-lg text-gray-800">Google Sheets</h3>
+                <p class="text-sm text-gray-600">ดูและจัดการข้อมูลออเดอร์ทั้งหมด</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- สถิติผู้ใช้ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-90">ผู้ใช้ทั้งหมด</p>
+                <p class="text-3xl font-bold" id="totalUsers">0</p>
+              </div>
+              <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-90">ผู้ดูแลระบบ</p>
+                <p class="text-3xl font-bold" id="adminCount">0</p>
+              </div>
+              <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-90">พนักงาน</p>
+                <p class="text-3xl font-bold" id="staffCount">0</p>
+              </div>
+              <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Debug Panel ถูกลบออกแล้ว -->
+        <div id="debugPanel" class="mb-6 bg-gray-900 text-white rounded-lg p-6 hidden" style="display: none !important;">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold flex items-center gap-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+              </svg>
+              🔍 Debug Online Status
+            </h3>
+            <button onclick="toggleDebugPanel()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">
+              ปิด
+            </button>
+          </div>
+          
+          <div class="bg-green-900 border-l-4 border-green-500 text-green-100 p-4 mb-4 rounded">
+            <p class="font-bold">✅ ระบบทำงานแบบ Real-time</p>
+            <p class="text-sm mt-1">อัปเดตอัตโนมัติทุก 3 วินาที | เกณฑ์ Online: 2 นาที</p>
+          </div>
+          
+          <div id="debugStatusDisplay" class="space-y-4">
+            <!-- จะถูกเติมด้วย JavaScript -->
+          </div>
+        </div>
+        
+        <!-- ส่วนเพิ่มผู้ใช้ใหม่ -->
+        <div class="mb-8 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border-2 border-dashed border-gray-300">
+          <h3 class="text-lg font-semibold mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            เพิ่มผู้ใช้ใหม่
+          </h3>
+          <form id="addUserForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">ชื่อผู้ใช้</label>
+                <input type="text" id="newUsername" placeholder="ชื่อผู้ใช้" class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" required>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">รหัสผ่าน</label>
+                <input type="password" id="newPassword" placeholder="รหัสผ่าน" class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" required>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">ประเภทผู้ใช้</label>
+              <div class="grid grid-cols-2 gap-4">
+                <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+                  <input type="radio" name="newRole" id="newRoleStaff" value="staff" required class="mr-3 w-4 h-4">
+                  <div>
+                    <span class="font-medium">👤 พนักงาน</span>
+                    <p class="text-xs text-gray-500">สามารถสั่งอาหารและดูออเดอร์</p>
+                  </div>
+                </label>
+                <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition">
+                  <input type="radio" name="newRole" id="newRoleAdmin" value="admin" required class="mr-3 w-4 h-4">
+                  <div>
+                    <span class="font-medium">👑 ผู้ดูแลระบบ</span>
+                    <p class="text-xs text-gray-500">สิทธิ์เต็มทุกฟีเจอร์</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-lg hover:from-green-600 hover:to-green-700 w-full font-medium shadow-lg hover:shadow-xl transition flex items-center justify-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              เพิ่มผู้ใช้
+            </button>
+          </form>
+        </div>
+
+        <!-- ส่วนแสดงรายชื่อผู้ใช้ -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            รายชื่อผู้ใช้ทั้งหมด
+          </h3>
+          <div class="grid grid-cols-1 gap-4" id="usersList">
+            <!-- รายการผู้ใช้จะถูกโหลดที่นี่ -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section ประวัติออเดอร์ที่จบแล้ว -->
+    <section id="historySection" class="hidden">
+      <h2 class="text-2xl font-semibold mb-4">📜 ประวัติออเดอร์ที่จบแล้ว</h2>
+
+      <button onclick="clearAllHistory()"
+        class="mb-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+        🗑️ เคลียร์บิลออเดอร์ทั้งหมด
+      </button>
+      <div id="historyContainer" class="bg-white p-4 rounded shadow space-y-4"></div>
+    </section>
+
+
+  </main>
+
+  <script>
+    // ---------- Google Sheets Configuration ----------
+    // ⚠️ แก้ไข WEB_APP_URL หลังจาก Deploy Apps Script แล้ว
+    const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1A-7GALat0kpHk4FKc5CVW5EBYs5x3dbCjudG57OaeNg/edit?gid=0#gid=0"; // URL ของ Google Sheets
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzDAWCVeSEoXg3yLEEiUXkTUHQV2ZpRHQCu4bJYtQHjtqdXfGrPJcPzG-wvMvXa088Z/exec"; // URL ของ Web App
+    
+    // ทำให้ auth.js เข้าถึง WEB_APP_URL ได้
+    window.WEB_APP_URL = WEB_APP_URL;
+    
+    // ฟังก์ชันเปิด Google Sheets
+    function openGoogleSheets() {
+      if (GOOGLE_SHEETS_URL && !GOOGLE_SHEETS_URL.includes('YOUR_SPREADSHEET_ID')) {
+        window.open(GOOGLE_SHEETS_URL, '_blank');
+      } else {
+        alert('⚠️ กรุณาตั้งค่า Google Sheets URL ในไฟล์ admin.html\n\nค้นหา: GOOGLE_SHEETS_URL\nแล้วใส่ URL ของ Google Sheets ของคุณ');
+      }
+    }
+    
+    // ---------- เมนูปกติ ----------
+    // โหลดเมนูจาก localStorage หรือใช้เมนูเริ่มต้น
+    let menuItems = [];
+    
+    function loadMenuData() {
+      const savedMenu = localStorage.getItem("menuData");
+      if (savedMenu) {
+        menuItems = JSON.parse(savedMenu);
+        console.log('✅ โหลดเมนูจาก localStorage สำเร็จ (จำนวน: ' + menuItems.length + ' รายการ)');
+      } else {
+        // เมนูเริ่มต้น
+        menuItems = [
+          { id: 1, name: "น่องไก่เล็ก", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+          { id: 2, name: "ปีกไก่", price: 15, img: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png" },
+          { id: 3, name: "น่องไก่ใหญ่", price: 29, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+          { id: 4, name: "ไก่ไร้กระดูก", price: 12, img: "https://cdn-icons-png.flaticon.com/512/2921/2921825.png" },
+          { id: 5, name: "สะโพกไก่", price: 39, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
+          { id: 6, name: "ข้าวหน้าไก่ทอดเก๊า", price: 49, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
+          { id: 7, name: "ข้าวไก่ทอดเก๊า + ซอสเลือกได้", price: 59, img: "https://cdn-icons-png.flaticon.com/512/2921/2921819.png" },
+          // --- เพิ่มเฟรนช์ฟรายส์ & ฮอทดอก ---
+          {id:201, name:"เฟรนช์ฟรายส์ S", price:29, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"S"},
+          {id:202, name:"เฟรนช์ฟรายส์ M", price:39, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"M"},
+          {id:203, name:"เฟรนช์ฟรายส์ L", price:49, img:"https://cdn-icons-png.flaticon.com/512/1046/1046784.png", size:"L"},
+          {id:204, name:"ฮอทดอก S", price:20, img:"https://cdn-icons-png.flaticon.com/512/1046/1046785.png", size:"S"},
+          {id:205, name:"ฮอทดอก M", price:30, img:"https://cdn-icons-png.flaticon.com/512/1046/1046785.png", size:"M"},
+          {id:206, name:"ฮอทดอก L", price:40, img:"https://cdn-icons-png.flaticon.com/512/1046/1046785.png", size:"L"}
+        ];
+        // บันทึกเมนูเริ่มต้นลง localStorage
+        saveMenu();
+        console.log('✅ สร้างเมนูเริ่มต้นและบันทึกลง localStorage');
+      }
+    }
+    
+    // โหลดเมนูเมื่อเริ่มต้น
+    loadMenuData();
+
+    let allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+    let pendingOrders = JSON.parse(localStorage.getItem("pendingOrders")) || [];
+    let completedOrders = JSON.parse(localStorage.getItem("completedOrders")) || [];
+    const menuTable = document.getElementById("menuTable");
+    const addMenuForm = document.getElementById("addMenuForm");
+    const orderMenuContainer = document.getElementById("orderMenuContainer");
+    const orderSummary = document.getElementById("orderSummary");
+    const orderList = document.getElementById("orderList");
+    const totalDisplay = document.getElementById("total");
+    let order = [];
+
+    // ---------- Admin: จัดการเมนู ----------
+    function renderTable(){
+      menuTable.innerHTML="";
+      menuItems.forEach((item,index)=>{
+        const imageHtml = item.img 
+          ? `<img src="${item.img}" class="w-16 h-16 mx-auto object-cover rounded">` 
+          : '<div class="w-16 h-16 mx-auto bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">ไม่มีรูป</div>';
+        menuTable.innerHTML+=`
+          <tr class="text-center">
+            <td class="border p-2">${imageHtml}</td>
+            <td class="border p-2">${item.name}</td>
+            <td class="border p-2">${item.price}</td>
+            <td class="border p-2">
+              <button onclick="editMenu(${index})" class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 mr-2">แก้ไข</button>
+              <button onclick="deleteMenu(${index})" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">ลบ</button>
+            </td>
+          </tr>
+        `;
+      });
+      // อัปเดตจำนวนเมนู
+      const menuCountEl = document.getElementById('menuCount');
+      if (menuCountEl) menuCountEl.textContent = menuItems.length;
+    }
+    renderTable();
+
+    addMenuForm.addEventListener("submit", e=>{
+      e.preventDefault();
+      const name=document.getElementById("menuName").value.trim();
+      const price=parseFloat(document.getElementById("menuPrice").value);
+      // determine image source
+      const imageSource = document.querySelector('input[name="imageSource"]:checked').value;
+      let img = '';
+      
+      if (imageSource === 'url') {
+        img = document.getElementById('menuImageUrl').value.trim();
+      } else if (imageSource === 'file') {
+        img = window._lastMenuImageDataUrl || '';
+      }
+      // if imageSource === 'none', img stays empty
+      
+      if(!name||!price) return alert("กรุณากรอกชื่อและราคา");
+      menuItems.push({id:Date.now(),name,price,img});
+      renderTable(); saveMenu(); renderOrderMenu(); renderPromos(); addMenuForm.reset();
+      const preview = document.getElementById('previewImage'); preview.src=''; preview.classList.add('hidden');
+      // reset file cache and radio to none
+      window._lastMenuImageDataUrl = null;
+      document.getElementById('imageSrcNone').checked = true;
+      document.getElementById('menuImageUrl').classList.add('hidden');
+      document.getElementById('menuImageFile').classList.add('hidden');
+    });
+
+    // preview image when URL entered
+    document.getElementById('menuImageUrl').addEventListener('input', function(){
+      const val = this.value.trim(); const preview = document.getElementById('previewImage');
+      if(val){ preview.src = val; preview.classList.remove('hidden'); } else { preview.src=''; preview.classList.add('hidden'); }
+    });
+
+    // file input preview
+    document.getElementById('menuImageFile').addEventListener('change', function(){
+      const file = this.files && this.files[0];
+      const preview = document.getElementById('previewImage');
+      if(!file){ preview.src=''; preview.classList.add('hidden'); window._lastMenuImageDataUrl = null; return; }
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const dataUrl = ev.target.result;
+        window._lastMenuImageDataUrl = dataUrl;
+        preview.src = dataUrl; preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // toggle between none/url/file inputs
+    document.getElementById('imageSrcNone').addEventListener('change', function(){
+      if(this.checked){ 
+        document.getElementById('menuImageUrl').classList.add('hidden'); 
+        document.getElementById('menuImageFile').classList.add('hidden');
+        document.getElementById('previewImage').classList.add('hidden');
+      }
+    });
+    document.getElementById('imageSrcUrl').addEventListener('change', function(){
+      if(this.checked){ 
+        document.getElementById('menuImageUrl').classList.remove('hidden'); 
+        document.getElementById('menuImageFile').classList.add('hidden'); 
+      }
+    });
+    document.getElementById('imageSrcFile').addEventListener('change', function(){
+      if(this.checked){ 
+        document.getElementById('menuImageUrl').classList.add('hidden'); 
+        document.getElementById('menuImageFile').classList.remove('hidden'); 
+      }
+    });
+
+    // preview click to open full image in new window
+    document.getElementById('previewImage').addEventListener('click', function(){ if(this.src) window.open(this.src, '_blank'); });
+
+    let editingIndex = -1;
+    
+    function editMenu(index){
+      editingIndex = index;
+      const item = menuItems[index];
+      
+      // แสดงฟอร์มแก้ไข
+      document.getElementById('editMenuForm').classList.remove('hidden');
+      document.getElementById('editMenuName').value = item.name;
+      document.getElementById('editMenuPrice').value = item.price;
+      
+      // แสดง preview รูปปัจจุบัน
+      const preview = document.getElementById('editPreviewImage');
+      if(item.img) {
+        preview.src = item.img;
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+      
+      // Reset radio buttons
+      document.querySelector('input[name="editImageSource"][value="none"]').checked = true;
+      document.getElementById('editImageUrl').classList.add('hidden');
+      document.getElementById('editImageFile').classList.add('hidden');
+      
+      // Scroll to form
+      document.getElementById('editMenuForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function cancelEdit() {
+      editingIndex = -1;
+      document.getElementById('editMenuForm').classList.add('hidden');
+      document.getElementById('editImageUrl').value = '';
+      document.getElementById('editImageFile').value = '';
+      document.getElementById('editPreviewImage').classList.add('hidden');
+    }
+    
+    function saveEditMenu() {
+      if(editingIndex === -1) return;
+      
+      const item = menuItems[editingIndex];
+      const newName = document.getElementById('editMenuName').value.trim();
+      const newPrice = parseFloat(document.getElementById('editMenuPrice').value);
+      
+      if(!newName || !newPrice) {
+        alert('❌ กรุณากรอกชื่อและราคา');
+        return;
+      }
+      
+      item.name = newName;
+      item.price = newPrice;
+      
+      // จัดการรูปภาพ
+      const imageSource = document.querySelector('input[name="editImageSource"]:checked').value;
+      
+      if(imageSource === 'url') {
+        const url = document.getElementById('editImageUrl').value.trim();
+        if(url) item.img = url;
+      } else if(imageSource === 'file') {
+        const file = document.getElementById('editImageFile').files[0];
+        if(file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            item.img = e.target.result;
+            finishEdit();
+          };
+          reader.readAsDataURL(file);
+          return; // รอการอ่านไฟล์เสร็จ
+        }
+      } else if(imageSource === 'remove') {
+        item.img = '';
+      }
+      // imageSource === 'none' ไม่ต้องทำอะไร
+      
+      finishEdit();
+    }
+    
+    function finishEdit() {
+      renderTable();
+      saveMenu();
+      renderOrderMenu();
+      renderPromos();
+      cancelEdit();
+      alert('✅ แก้ไขเมนูสำเร็จ!');
+    }
+    
+    // Event listeners สำหรับฟอร์มแก้ไข
+    document.querySelectorAll('input[name="editImageSource"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const urlInput = document.getElementById('editImageUrl');
+        const fileInput = document.getElementById('editImageFile');
+        
+        if(this.value === 'url') {
+          urlInput.classList.remove('hidden');
+          fileInput.classList.add('hidden');
+        } else if(this.value === 'file') {
+          urlInput.classList.add('hidden');
+          fileInput.classList.remove('hidden');
+        } else {
+          urlInput.classList.add('hidden');
+          fileInput.classList.add('hidden');
+        }
+      });
+    });
+    
+    // Preview รูปจาก URL
+    document.getElementById('editImageUrl').addEventListener('input', function() {
+      const preview = document.getElementById('editPreviewImage');
+      if(this.value.trim()) {
+        preview.src = this.value.trim();
+        preview.classList.remove('hidden');
+      }
+    });
+    
+    // Preview รูปจากไฟล์
+    document.getElementById('editImageFile').addEventListener('change', function() {
+      const file = this.files[0];
+      const preview = document.getElementById('editPreviewImage');
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function deleteMenu(index){
+      if(confirm("ต้องการลบเมนูนี้ใช่ไหม?")){
+        menuItems.splice(index,1);
+        renderTable(); saveMenu(); renderOrderMenu(); renderPromos();
+      }
+    }
+
+    function saveMenu(){ 
+      localStorage.setItem("menuData",JSON.stringify(menuItems)); 
+      // บันทึก timestamp ของการอัปเดต
+      const timestamp = Date.now();
+      localStorage.setItem("menuDataTimestamp", timestamp.toString());
+      console.log('✅ เมนูถูกบันทึกลง localStorage แล้ว (จำนวน: ' + menuItems.length + ' รายการ)');
+      
+      // ส่ง Custom Event เพื่อแจ้งเตือนแท็บอื่นๆ (ถ้ามี)
+      try {
+        window.dispatchEvent(new CustomEvent('menuUpdated', { 
+          detail: { count: menuItems.length, timestamp: timestamp } 
+        }));
+      } catch(e) {
+        console.log('Custom event not supported');
+      }
+      
+      // แจ้งเตือนว่าเมนูถูกอัปเดต
+      showMenuUpdateNotification();
+    }
+    
+    // ฟังก์ชันแสดงการแจ้งเตือนเมื่ออัปเดตเมนู
+    function showMenuUpdateNotification() {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+      notification.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>เมนูถูกอัปเดตแล้ว (${menuItems.length} รายการ)</span>
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 2000);
+    }
+
+    // ---------- สั่งอาหาร (Staff-like) ----------
+    function renderOrderMenu(){
+      orderMenuContainer.innerHTML="";
+      if(menuItems.length===0){
+        orderMenuContainer.innerHTML=`<p class="text-center text-gray-500 col-span-full">❌ ยังไม่มีเมนูในระบบ</p>`;
+        return;
+      }
+      menuItems.forEach(item=>{
+        const card=document.createElement("div");
+        card.className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition";
+        const imageHtml = item.img 
+          ? `<img src="${item.img}" alt="${item.name}" class="w-24 h-24 mb-3 object-cover rounded">` 
+          : '<div class="w-24 h-24 mb-3 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-sm">ไม่มีรูป</div>';
+        card.innerHTML=`
+          ${imageHtml}
+          <h2 class="font-semibold">${item.name}${item.size ? " ("+item.size+")" : ""}</h2>
+          <p class="text-gray-600 mb-3">${item.price} บาท</p>
+          <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700" onclick="addToOrder(${item.id})">เพิ่ม</button>
+        `;
+        orderMenuContainer.appendChild(card);
+      });
+    }
+
+    function addToOrder(id){
+      const item=menuItems.find(i=>i.id===id);
+      const existing=order.find(o=>o.id===id);
+      if(existing) existing.qty++; else order.push({...item,qty:1});
+      updateOrderSummary();
+    }
+
+    function updateOrderSummary(){
+      orderList.innerHTML="";
+      let total=0;
+      order.forEach(item=>{
+        total+=item.price*item.qty;
+        const sizeText=item.size ? ` (${item.size})` : "";
+        orderList.innerHTML+=`<li class="flex justify-between items-center mb-1">${item.name}${sizeText} x${item.qty} <button onclick="removeItem(${item.id})" class="text-red-500 ml-2">✕</button></li>`;
+      });
+      totalDisplay.textContent=total;
+      orderSummary.classList.toggle("hidden",order.length===0);
+    }
+
+    function removeItem(id){ order=order.filter(i=>i.id!==id); updateOrderSummary(); }
+
+    function submitOrder(){
+      if(order.length===0) return alert("ยังไม่มีรายการอาหาร");
+      
+      // ดึงข้อมูล user ปัจจุบัน
+      const currentUser = getCurrentUser();
+      
+      const orderData = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString(),
+        username: currentUser ? currentUser.username : 'admin',
+        orderedBy: currentUser ? currentUser.username : 'admin',
+        items: order,
+        total: totalDisplay.textContent
+      };
+      
+      pendingOrders.push(orderData);
+      localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+      
+      // บันทึกลง allOrders เพื่อให้ดูประวัติได้
+      allOrders.push(orderData);
+      localStorage.setItem("allOrders", JSON.stringify(allOrders));
+      
+      alert("ส่งออเดอร์เรียบร้อย ✅");
+      order = [];
+      updateOrderSummary();
+      showSection('report');
+      updateReport();
+    }
+
+    // ---------- ฟังก์ชันสลับแท็บ ----------
+    function showMenuTab(tab) {
+      const menuTab = document.getElementById('menuTab');
+      const promoTab = document.getElementById('promoTab');
+      const menuManagement = document.getElementById('menuManagement');
+      const promoManagement = document.getElementById('promoManagement');
+      
+      if (tab === 'menu') {
+        menuTab.className = 'px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold';
+        menuTab.innerHTML = '🍔 จัดการเมนู';
+        promoTab.className = 'px-4 py-2 rounded-lg bg-gray-300 text-gray-900 font-semibold hover:bg-gray-400';
+        promoTab.innerHTML = '🔥 จัดการโปรโมชั่น';
+        menuManagement.classList.remove('hidden');
+        promoManagement.classList.add('hidden');
+      } else {
+        menuTab.className = 'px-4 py-2 rounded-lg bg-gray-300 text-gray-900 font-semibold hover:bg-gray-400';
+        menuTab.innerHTML = '🍔 จัดการเมนู';
+        promoTab.className = 'px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold';
+        promoTab.innerHTML = '🔥 จัดการโปรโมชั่น';
+        menuManagement.classList.add('hidden');
+        promoManagement.classList.remove('hidden');
+        renderPromoTable();
+      }
+    }
+
+    // ---------- โปรโมชั่น ----------
+    // โหลดโปรโมชั่นจาก localStorage หรือใช้ค่าเริ่มต้น
+    let promoItems = [
+      {id:101,name:"โปรไก่ชิ้น", options:[
+        {label:"3 ชิ้น = 39 บาท", price:39, qty:1},
+        {label:"6 ชิ้น = 79 บาท", price:79, qty:1},
+        {label:"10 ชิ้น = 129 บาท", price:129, qty:1},
+      ]},
+      {id:102,name:"โปรน่องไก่ใหญ่", options:[
+        {label:"3 ชิ้น = 79 บาท", price:79, qty:1},
+        {label:"6 ชิ้น = 159 บาท", price:159, qty:1},
+      ]},
+      {id:103,name:"โปรสะโพกไก่", options:[
+        {label:"3 ชิ้น = 99 บาท", price:99, qty:1},
+      ]},
+      {id:104,name:"โปรไก่ไร้กระดูก", options:[
+        {label:"5 ชิ้น = 59 บาท", price:59, qty:1},
+        {label:"10 ชิ้น = 99 บาท", price:99, qty:1},
+      ]},
+      {id:105,name:"โปรรวมพิเศษ", options:[
+        {label:"สะโพก 1 + น่องใหญ่ 2 = 89 บาท", price:89, qty:1},
+         {label:"เฟรนช์ฟรายส์ M + ไก่ทอด (ชิ้นละ 15) 3 ชิ้น = 69 บาท", price:69, qty:1},
+      ]},
+      {id:106,name:"เซตสุดคุ้ม", options:[
+        {label:"ทุกชิ้นส่วน อย่างละ 1  = 109 บาท", price:109, qty:1},
+        {label:"ทุกชิ้นส่วน อย่างละ 2  = 209 บาท", price:209, qty:1},
+        {label:"ทุกชิ้นส่วน อย่างละ 3  = 309 บาท", price:309, qty:1},
+      ]},
+      // --- โปรโมชั่นเฟรนช์ฟรายส์ ---
+      {id:201, name:"โปรเฟรนช์ฟรายส์ & ฮอทดอก", options:[
+        {label:"เฟรนช์ฟรายส์+ฮอทดอก S = 29", price:29, qty:1, details:"S"},
+        {label:"เฟรนช์ฟรายส์+ฮอทดอก M = 39", price:39, qty:1, details:"M"},
+        {label:"เฟรนช์ฟรายส์+ฮอทดอก L = 49", price:49, qty:1, details:"L"},
+      ]}
+    ];
+    const promoContainer=document.getElementById("promoContainer");
+
+    // ฟังก์ชันโหลดโปรโมชั่นจาก localStorage
+    function loadPromoData() {
+      const savedPromos = localStorage.getItem("promoData");
+      if (savedPromos) {
+        promoItems = JSON.parse(savedPromos);
+        console.log('✅ โหลดโปรโมชั่นจาก localStorage (จำนวน: ' + promoItems.length + ' รายการ)');
+      } else {
+        // ใช้โปรโมชั่นเริ่มต้น
+        savePromos();
+      }
+    }
+    
+    // ฟังก์ชันบันทึกโปรโมชั่น
+    function savePromos() {
+      localStorage.setItem("promoData", JSON.stringify(promoItems));
+      localStorage.setItem("promoDataTimestamp", Date.now().toString());
+      console.log('✅ บันทึกโปรโมชั่นลง localStorage (จำนวน: ' + promoItems.length + ' รายการ)');
+      
+      // อัปเดตจำนวน
+      const promoCountEl = document.getElementById('promoCount');
+      if (promoCountEl) promoCountEl.textContent = promoItems.length;
+    }
+    
+    // ฟังก์ชันแสดงโปรโมชั่นในหน้าสั่งอาหาร
+    function renderPromos(){
+      if (!promoContainer) return;
+      promoContainer.innerHTML="";
+      
+      if (promoItems.length === 0) {
+        promoContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">ยังไม่มีโปรโมชั่น</p>';
+        return;
+      }
+      
+      promoItems.forEach(promo=>{
+        const card=document.createElement("div");
+        card.className="bg-yellow-200 p-4 rounded-lg shadow flex flex-col gap-2";
+        
+        // แสดงรูปภาพถ้ามี
+        let imageHtml = '';
+        if (promo.image) {
+          imageHtml = `<img src="${promo.image}" alt="${promo.name}" class="w-full h-32 object-cover rounded-lg mb-2">`;
+        }
+        
+        card.innerHTML=`${imageHtml}<h3 class="font-semibold text-lg">${promo.name}</h3>`;
+        promo.options.forEach(opt=>{
+          const btn=document.createElement("button");
+          btn.className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600";
+          btn.textContent=opt.label;
+          btn.onclick=()=> addPromoToOrder(promo.name,opt.price,opt.qty,opt.details);
+          card.appendChild(btn);
+        });
+        promoContainer.appendChild(card);
+      });
+    }
+    
+    // ฟังก์ชันแสดงตารางโปรโมชั่นในหน้าจัดการ
+    function renderPromoTable() {
+      const promoTable = document.getElementById('promoTable');
+      if (!promoTable) return;
+      
+      promoTable.innerHTML = "";
+      
+      if (promoItems.length === 0) {
+        promoTable.innerHTML = '<tr><td colspan="4" class="border p-4 text-center text-gray-500">ยังไม่มีโปรโมชั่น</td></tr>';
+        return;
+      }
+      
+      promoItems.forEach((promo, index) => {
+        const optionsText = promo.options.map(opt => opt.label).join('<br>');
+        const imageHtml = promo.image 
+          ? `<img src="${promo.image}" alt="${promo.name}" class="w-16 h-16 mx-auto object-cover rounded">` 
+          : '<div class="w-16 h-16 mx-auto bg-gray-200 rounded flex items-center justify-center text-gray-400">ไม่มีรูป</div>';
+        promoTable.innerHTML += `
+          <tr class="text-center hover:bg-gray-50">
+            <td class="border p-2">${imageHtml}</td>
+            <td class="border p-3 font-semibold">${promo.name}</td>
+            <td class="border p-3 text-sm">${optionsText}</td>
+            <td class="border p-3">
+              <button onclick="editPromo(${index})" class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 mr-2">แก้ไข</button>
+              <button onclick="deletePromo(${index})" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">ลบ</button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      // อัปเดตจำนวน
+      const promoCountEl = document.getElementById('promoCount');
+      if (promoCountEl) promoCountEl.textContent = promoItems.length;
+    }
+    
+    // ฟังก์ชันลบโปรโมชั่น
+    function deletePromo(index) {
+      if (confirm('ต้องการลบโปรโมชั่น "' + promoItems[index].name + '" ใช่ไหม?')) {
+        promoItems.splice(index, 1);
+        savePromos();
+        renderPromoTable();
+        renderPromos();
+        alert('✅ ลบโปรโมชั่นสำเร็จ');
+      }
+    }
+    
+    // ฟังก์ชันแก้ไขโปรโมชั่น
+    let editingPromoIndex = -1;
+    let editPromoOptionsList = [];
+    
+    function editPromo(index) {
+      editingPromoIndex = index;
+      const promo = promoItems[index];
+      
+      // แสดงฟอร์มแก้ไข
+      document.getElementById('editPromoForm').classList.remove('hidden');
+      document.getElementById('editPromoName').value = promo.name;
+      
+      // แสดง preview รูปปัจจุบัน
+      const preview = document.getElementById('editPromoPreviewImage');
+      if(promo.image) {
+        preview.src = promo.image;
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+      
+      // โหลดตัวเลือกปัจจุบัน
+      editPromoOptionsList = JSON.parse(JSON.stringify(promo.options)); // Deep copy
+      renderEditPromoOptions();
+      
+      // Reset radio buttons
+      document.querySelector('input[name="editPromoImageSource"][value="none"]').checked = true;
+      document.getElementById('editPromoImageUrl').classList.add('hidden');
+      document.getElementById('editPromoImageFile').classList.add('hidden');
+      
+      // Scroll to form
+      document.getElementById('editPromoForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function renderEditPromoOptions() {
+      const container = document.getElementById('editPromoOptionsContainer');
+      
+      if(editPromoOptionsList.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">ยังไม่มีตัวเลือก กดปุ่ม "เพิ่มตัวเลือก" ด้านล่าง</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      editPromoOptionsList.forEach((opt, idx) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'rounded-xl p-3 mb-2';
+        optionDiv.style.backgroundColor = '#FFE7A0';
+        optionDiv.style.border = '1px solid #E5E4E2';
+        
+        optionDiv.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold" style="color: #D8504C;">ตัวเลือก ${idx + 1}</span>
+            <button type="button" onclick="removeEditPromoOption(${idx})" class="text-red-600 hover:text-red-800 font-bold">
+              🗑️ ลบ
+            </button>
+          </div>
+          <div class="space-y-2">
+            <input type="text" value="${opt.label.split(' = ')[0]}" id="editOptName${idx}" placeholder="ชื่อ (เช่น: 3 ชิ้น)" class="w-full px-3 py-2 rounded-lg text-sm" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="number" value="${opt.price}" id="editOptPrice${idx}" placeholder="ราคา" class="px-3 py-2 rounded-lg text-sm" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+              <input type="number" value="${opt.qty || 1}" id="editOptQty${idx}" placeholder="จำนวน" class="px-3 py-2 rounded-lg text-sm" style="border: 1px solid #E5E4E2; background-color: #FAF9F7;">
+            </div>
+          </div>
+        `;
+        container.appendChild(optionDiv);
+      });
+    }
+    
+    function addEditPromoOption() {
+      editPromoOptionsList.push({ label: '', price: 0, qty: 1 });
+      renderEditPromoOptions();
+    }
+    
+    function removeEditPromoOption(idx) {
+      editPromoOptionsList.splice(idx, 1);
+      renderEditPromoOptions();
+    }
+    
+    function cancelEditPromo() {
+      editingPromoIndex = -1;
+      editPromoOptionsList = [];
+      document.getElementById('editPromoForm').classList.add('hidden');
+      document.getElementById('editPromoImageUrl').value = '';
+      document.getElementById('editPromoImageFile').value = '';
+      document.getElementById('editPromoPreviewImage').classList.add('hidden');
+    }
+    
+    function saveEditPromo() {
+      if(editingPromoIndex === -1) return;
+      
+      const promo = promoItems[editingPromoIndex];
+      const newName = document.getElementById('editPromoName').value.trim();
+      
+      if(!newName) {
+        alert('❌ กรุณากรอกชื่อโปรโมชั่น');
+        return;
+      }
+      
+      // รวบรวมตัวเลือก
+      const options = [];
+      for(let i = 0; i < editPromoOptionsList.length; i++) {
+        const nameEl = document.getElementById('editOptName' + i);
+        const priceEl = document.getElementById('editOptPrice' + i);
+        const qtyEl = document.getElementById('editOptQty' + i);
+        
+        if(nameEl && priceEl && qtyEl) {
+          const name = nameEl.value.trim();
+          const price = parseFloat(priceEl.value);
+          const qty = parseInt(qtyEl.value) || 1;
+          
+          if(name && price) {
+            options.push({
+              label: name + ' = ' + price + ' บาท',
+              price: price,
+              qty: qty
+            });
+          }
+        }
+      }
+      
+      if(options.length === 0) {
+        alert('❌ กรุณาเพิ่มตัวเลือกอย่างน้อย 1 รายการ');
+        return;
+      }
+      
+      promo.name = newName;
+      promo.options = options;
+      
+      // จัดการรูปภาพ
+      const imageSource = document.querySelector('input[name="editPromoImageSource"]:checked').value;
+      
+      if(imageSource === 'url') {
+        const url = document.getElementById('editPromoImageUrl').value.trim();
+        if(url) promo.image = url;
+      } else if(imageSource === 'file') {
+        const file = document.getElementById('editPromoImageFile').files[0];
+        if(file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            promo.image = e.target.result;
+            finishEditPromo();
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+      } else if(imageSource === 'remove') {
+        promo.image = '';
+      }
+      
+      finishEditPromo();
+    }
+    
+    function finishEditPromo() {
+      savePromos();
+      renderPromoTable();
+      renderPromos();
+      cancelEditPromo();
+      alert('✅ แก้ไขโปรโมชั่นสำเร็จ!');
+    }
+    
+    // Event listeners สำหรับฟอร์มแก้ไขโปรโมชั่น
+    document.querySelectorAll('input[name="editPromoImageSource"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const urlInput = document.getElementById('editPromoImageUrl');
+        const fileInput = document.getElementById('editPromoImageFile');
+        
+        if(this.value === 'url') {
+          urlInput.classList.remove('hidden');
+          fileInput.classList.add('hidden');
+        } else if(this.value === 'file') {
+          urlInput.classList.add('hidden');
+          fileInput.classList.remove('hidden');
+        } else {
+          urlInput.classList.add('hidden');
+          fileInput.classList.add('hidden');
+        }
+      });
+    });
+    
+    // Preview รูปจาก URL
+    document.getElementById('editPromoImageUrl').addEventListener('input', function() {
+      const preview = document.getElementById('editPromoPreviewImage');
+      if(this.value.trim()) {
+        preview.src = this.value.trim();
+        preview.classList.remove('hidden');
+      }
+    });
+    
+    // Preview รูปจากไฟล์
+    document.getElementById('editPromoImageFile').addEventListener('change', function() {
+      const file = this.files[0];
+      const preview = document.getElementById('editPromoPreviewImage');
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // ระบบจัดการโปรโมชั่นแบบหลายตัวเลือก
+    let tempPromoOptions = [];
+    
+    // ฟังก์ชันเพิ่มตัวเลือกโปรโมชั่น
+    function addPromoOption() {
+      const container = document.getElementById('promoOptionsContainer');
+      const index = tempPromoOptions.length;
+      
+      const optionDiv = document.createElement('div');
+      optionDiv.className = 'flex gap-2 items-center bg-gray-50 p-3 rounded-lg';
+      optionDiv.id = 'promoOption' + index;
+      optionDiv.innerHTML = `
+        <input type="text" id="optionName${index}" placeholder="เช่น: 3 ชิ้น" class="flex-1 border p-2 rounded" required>
+        <input type="number" id="optionPrice${index}" placeholder="ราคา" class="w-24 border p-2 rounded" required>
+        <input type="number" id="optionQty${index}" value="1" placeholder="จำนวน" class="w-20 border p-2 rounded" required>
+        <button type="button" onclick="removePromoOption(${index})" class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600">
+          🗑️
+        </button>
+      `;
+      
+      container.appendChild(optionDiv);
+      tempPromoOptions.push({ index: index });
+    }
+    
+    // ฟังก์ชันลบตัวเลือก
+    function removePromoOption(index) {
+      const optionDiv = document.getElementById('promoOption' + index);
+      if (optionDiv) {
+        optionDiv.remove();
+        tempPromoOptions = tempPromoOptions.filter(opt => opt.index !== index);
+      }
+    }
+    
+    // ฟังก์ชันบันทึกโปรโมชั่นใหม่
+    function saveNewPromo() {
+      const groupName = document.getElementById('promoGroupName').value.trim();
+      
+      if (!groupName) {
+        alert('❌ กรุณากรอกชื่อโปรโมชั่น');
+        return;
+      }
+      
+      if (tempPromoOptions.length === 0) {
+        alert('❌ กรุณาเพิ่มตัวเลือกอย่างน้อย 1 รายการ');
+        return;
+      }
+      
+      // รวบรวมตัวเลือกทั้งหมด
+      const options = [];
+      for (const opt of tempPromoOptions) {
+        const nameEl = document.getElementById('optionName' + opt.index);
+        const priceEl = document.getElementById('optionPrice' + opt.index);
+        const qtyEl = document.getElementById('optionQty' + opt.index);
+        
+        if (nameEl && priceEl && qtyEl) {
+          const name = nameEl.value.trim();
+          const price = parseFloat(priceEl.value);
+          const qty = parseInt(qtyEl.value) || 1;
+          
+          if (name && price) {
+            options.push({
+              label: name + ' = ' + price + ' บาท',
+              price: price,
+              qty: qty
+            });
+          }
+        }
+      }
+      
+      if (options.length === 0) {
+        alert('❌ กรุณากรอกข้อมูลตัวเลือกให้ครบ');
+        return;
+      }
+      
+      // จัดการรูปภาพ
+      let promoImage = '';
+      const imageSource = document.querySelector('input[name="promoImageSource"]:checked').value;
+      
+      if (imageSource === 'url') {
+        promoImage = document.getElementById('promoImageUrlInput').value.trim();
+      } else if (imageSource === 'file') {
+        promoImage = window._lastPromoImageDataUrl || '';
+      }
+      
+      // สร้างโปรโมชั่นใหม่
+      const newPromo = {
+        id: Date.now(),
+        name: groupName,
+        options: options,
+        image: promoImage
+      };
+      
+      promoItems.push(newPromo);
+      savePromos();
+      renderPromoTable();
+      renderPromos();
+      clearPromoForm();
+      
+      alert('✅ เพิ่มโปรโมชั่นสำเร็จ (' + options.length + ' ตัวเลือก)');
+    }
+    
+    // ฟังก์ชันล้างฟอร์ม
+    function clearPromoForm() {
+      document.getElementById('promoGroupName').value = '';
+      document.getElementById('promoOptionsContainer').innerHTML = '';
+      tempPromoOptions = [];
+      
+      // ล้างรูปภาพ
+      document.getElementById('promoImageNone').checked = true;
+      document.getElementById('promoImageUrlInput').value = '';
+      document.getElementById('promoImageUrlInput').classList.add('hidden');
+      document.getElementById('promoImageFileInput').value = '';
+      document.getElementById('promoImageFileInput').classList.add('hidden');
+      document.getElementById('promoPreviewImage').src = '';
+      document.getElementById('promoPreviewImage').classList.add('hidden');
+      window._lastPromoImageDataUrl = null;
+      
+      // เพิ่มตัวเลือกแรกอัตโนมัติ
+      addPromoOption();
+    }
+    
+    // Event Listeners สำหรับรูปภาพโปรโมชั่น
+    document.getElementById('promoImageNone').addEventListener('change', function() {
+      if (this.checked) {
+        document.getElementById('promoImageUrlInput').classList.add('hidden');
+        document.getElementById('promoImageFileInput').classList.add('hidden');
+        document.getElementById('promoPreviewImage').classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('promoImageUrl').addEventListener('change', function() {
+      if (this.checked) {
+        document.getElementById('promoImageUrlInput').classList.remove('hidden');
+        document.getElementById('promoImageFileInput').classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('promoImageFile').addEventListener('change', function() {
+      if (this.checked) {
+        document.getElementById('promoImageUrlInput').classList.add('hidden');
+        document.getElementById('promoImageFileInput').classList.remove('hidden');
+      }
+    });
+    
+    // Preview รูปภาพจาก URL
+    document.getElementById('promoImageUrlInput').addEventListener('input', function() {
+      const val = this.value.trim();
+      const preview = document.getElementById('promoPreviewImage');
+      if (val) {
+        preview.src = val;
+        preview.classList.remove('hidden');
+      } else {
+        preview.src = '';
+        preview.classList.add('hidden');
+      }
+    });
+    
+    // Preview รูปภาพจากไฟล์
+    document.getElementById('promoImageFileInput').addEventListener('change', function() {
+      const file = this.files && this.files[0];
+      const preview = document.getElementById('promoPreviewImage');
+      if (!file) {
+        preview.src = '';
+        preview.classList.add('hidden');
+        window._lastPromoImageDataUrl = null;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const dataUrl = ev.target.result;
+        window._lastPromoImageDataUrl = dataUrl;
+        preview.src = dataUrl;
+        preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    // คลิกรูปเพื่อขยาย
+    document.getElementById('promoPreviewImage').addEventListener('click', function() {
+      if (this.src) window.open(this.src, '_blank');
+    });
+    
+    // เพิ่มตัวเลือกแรกเมื่อโหลดหน้า
+    window.addEventListener('load', function() {
+      if (document.getElementById('promoOptionsContainer')) {
+        addPromoOption();
+      }
+    });
+    
+    // โหลดโปรโมชั่นเมื่อเริ่มต้น
+    loadPromoData();
+
+    function addPromoToOrder(name,price,qty,size){
+      const existing=order.find(o=>o.name===name && o.price===price && o.size===size);
+      if(existing) existing.qty+=qty;
+      else order.push({id:Date.now(),name,price,qty,size});
+      updateOrderSummary();
+    }
+
+    renderOrderMenu(); renderPromos();
+
+    // ---------- รายรับรายจ่าย ----------
+    function updateReport(){
+      const reportSection=document.getElementById("reportSection");
+      reportSection.innerHTML=`<h2 class="text-2xl font-semibold mb-4">💰 รายรับรายจ่าย</h2>`;
+
+      if(pendingOrders.length===0){ reportSection.innerHTML+=`<div class="bg-white p-4 rounded shadow">ยังไม่มีออเดอร์</div>`; 
+      return; 
+     }
+
+      let totalIncome=0;
+      const container=document.createElement("div");
+      container.className="bg-white p-4 rounded shadow space-y-4";
+      const menuSummary={};
+      pendingOrders.forEach((ord,index)=>{
+        let orderHtml=`<div class="border-b pb-2"><p class="font-semibold">ออเดอร์ #${index+1} - ${ord.timestamp}</p><ul class="ml-4">`;
+        ord.items.forEach(item=>{
+          const sizeText=item.size?` (${item.size})`:"";
+          orderHtml+=`<li>${item.name}${sizeText} x${item.qty} = ${item.price*item.qty} บาท</li>`;
+          totalIncome+=item.price*item.qty;
+          const key=item.name+(item.size?` (${item.size})`:"");
+          if(menuSummary[key]) menuSummary[key].qty+=item.qty;
+          else menuSummary[key]={price:item.price,qty:item.qty};
+        });
+        orderHtml+=`</ul>
+        <p class="font-bold mt-1">รวม: ${ord.total} บาท</p>
+        <button onclick="confirmOrder(${index})" class="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">✅ ยืนยันออเดอร์นี้</button>
+        </div>`;
+        container.innerHTML+=orderHtml;
+      });
+      let summaryHtml=`<div class="bg-gray-100 p-3 rounded shadow mt-4"><p class="font-semibold mb-2">📊 สรุปตามเมนู</p><ul>`;
+      for(const name in menuSummary){
+        const item=menuSummary[name];
+        summaryHtml+=`<li>${name}: ${item.qty} ชิ้น รวม ${item.price*item.qty} บาท</li>`;
+      }
+      summaryHtml+=`</ul></div>`;
+      container.innerHTML+=summaryHtml;
+      reportSection.appendChild(container);
+      reportSection.innerHTML+=`<p class="mt-4 font-bold text-lg">ยอดรวมทั้งหมด: ${totalIncome} บาท</p>`;
+    }
+    // ---------- Pending on Sheet (shared) ----------
+    let fetchedPending = [];
+    async function loadPendingFromSheet(){
+      if(!WEB_APP_URL || WEB_APP_URL.includes('REPLACE_WITH_YOUR_WEB_APP_URL')) return alert('กรุณาใส่ WEB_APP_URL ในไฟล์ admin.html');
+      try{
+        const res = await fetch(WEB_APP_URL + '?action=getPending');
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const j = await res.json();
+        if(j && j.status === 'success'){
+          fetchedPending = j.pending || [];
+          renderFetchedPending();
+          alert('โหลดรายการ pending จาก Google Sheet เรียบร้อย');
+        } else {
+          console.warn('loadPendingFromSheet', j);
+          alert('ไม่สามารถโหลด pending ได้');
+        }
+      }catch(err){ console.error(err); alert('เชื่อมต่อ Web App ไม่ได้'); }
+    }
+
+    function renderFetchedPending(){
+      const reportSection=document.getElementById("reportSection");
+      const container = document.createElement('div');
+      container.className='bg-white p-4 rounded shadow space-y-4 mt-4';
+      if(!fetchedPending || fetchedPending.length===0){ container.innerHTML = '<p class="text-gray-500">ไม่มีรายการ pending ใน sheet</p>'; reportSection.appendChild(container); return; }
+      fetchedPending.forEach((p, idx)=>{
+        let html = `<div class="border-b pb-2"><p class="font-semibold">#${p.PendingID} - ${p.Timestamp}</p><ul class="ml-4">`;
+        const items = JSON.parse(p.Items_JSON || '[]');
+        items.forEach(it=>{ html+=`<li>${it.name}${it.size?(' ('+it.size+')'):''} x${it.qty} = ${it.price*it.qty} บาท</li>`; });
+        html+=`</ul><p class="font-bold mt-1">รวม: ${p.Total} บาท</p><div class="mt-2"><button onclick="confirmPendingOnSheet('${p.PendingID}','${idx}')" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">ยืนยันและบันทึกลง Sheets</button></div></div>`;
+        container.innerHTML += html;
+      });
+      reportSection.appendChild(container);
+    }
+
+    async function confirmPendingOnSheet(pendingId, idx){
+      if(!confirm('ยืนยันจะบันทึกออเดอร์นี้ลง Google Sheets ใช่หรือไม่?')) return;
+      try{
+        const res = await fetch(WEB_APP_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'confirmPending', pendingId: pendingId }) });
+        const j = await res.json().catch(()=>null);
+        if(res.ok && j && j.status === 'success'){
+          alert('ยืนยันและบันทึกเรียบร้อย');
+          // remove from fetchedPending and re-render
+          fetchedPending = fetchedPending.filter(p => String(p.PendingID) !== String(pendingId));
+          renderFetchedPending();
+          // also refresh local history
+          renderHistory();
+        } else {
+          console.warn('confirmPendingOnSheet', res.status, j);
+          alert('การยืนยันล้มเหลว — ดู console');
+        }
+      }catch(err){ console.error(err); alert('เชื่อมต่อ Web App ไม่ได้'); }
+    }
+    function renderHistory(){
+      const historyContainer = document.getElementById("historyContainer");
+      historyContainer.innerHTML = "";
+      if(allOrders.length === 0){
+        historyContainer.innerHTML = `<p class="text-gray-500">ยังไม่มีออเดอร์ที่จบแล้ว</p>`;
+        return;
+      }
+
+      allOrders.forEach((order, index) => {
+        let itemsHtml = "";
+        order.items.forEach(item => {
+          const sizeText = item.size ? ` (${item.size})` : "";
+          itemsHtml += `<li>${item.name}${sizeText} x${item.qty} = ${item.price * item.qty} บาท</li>`;
+        });
+        historyContainer.innerHTML += `
+          <div class="border-b pb-2">
+            <p class="font-semibold">🧾 ออเดอร์ #${index + 1} - ${order.timestamp}</p>
+            <ul class="ml-4 list-disc">${itemsHtml}</ul>
+            <p class="font-bold mt-1">รวม: ${order.total} บาท</p>
+          </div>
+        `;
+      });
+    }
+    function clearAllHistory() {
+      if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการล้างประวัติออเดอร์ทั้งหมด?")) return;
+
+      localStorage.removeItem("allOrders");
+      localStorage.removeItem("completedOrders");
+
+      allOrders = [];
+      completedOrders = [];
+      renderHistory()
+      alert("✅ ล้างประวัติออเดอร์ทั้งหมดเรียบร้อยแล้ว");
+    }
+
+    function confirmOrder(index) {
+      const confirmed = confirm("คุณต้องการยืนยันออเดอร์นี้หรือไม่?");
+      if (!confirmed) return;
+      // ย้ายออเดอร์จาก pendingOrders → completedOrders
+      completedOrders.push(pendingOrders[index]);
+      pendingOrders.splice(index, 1);
+      // บันทึกกลับลง localStorage
+      localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+      localStorage.setItem("completedOrders", JSON.stringify(completedOrders));
+       // อัปเดตหน้า
+      updateReport();
+      renderHistory();
+    }
+
+    // ---------- จัดการผู้ใช้ ----------
+    function initializeUserManagement() {
+      const usersList = document.getElementById('usersList');
+      const addUserForm = document.getElementById('addUserForm');
+
+      // ฟังก์ชันดึงประวัติการสั่งอาหารของ Staff
+      function getUserOrderHistory(username) {
+        const allOrders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+        const completedOrders = JSON.parse(localStorage.getItem('completedOrders') || '[]');
+        const pendingOrders = JSON.parse(localStorage.getItem('pendingOrders') || '[]');
+        
+        // รวมออเดอร์ทั้งหมด
+        const allUserOrders = [...allOrders, ...completedOrders, ...pendingOrders];
+        
+        // กรองเฉพาะออเดอร์ของ user นี้
+        const userOrders = allUserOrders.filter(order => 
+          order.username === username || order.orderedBy === username
+        );
+        
+        return userOrders;
+      }
+
+      // ฟังก์ชันคำนวณสถิติการสั่งอาหาร
+      function calculateUserStats(username) {
+        const orders = getUserOrderHistory(username);
+        const totalOrders = orders.length;
+        const totalAmount = orders.reduce((sum, order) => {
+          const orderTotal = typeof order.total === 'string' 
+            ? parseFloat(order.total) 
+            : order.total || 0;
+          return sum + orderTotal;
+        }, 0);
+        
+        return { totalOrders, totalAmount };
+      }
+
+      // ฟังก์ชันตรวจสอบว่า user กำลัง login อยู่หรือไม่ (ปรับปรุงให้ใช้งานได้ทุกกรณี + Google Sheets)
+      function isUserOnline(username) {
+        const now = Date.now();
+        const ONLINE_THRESHOLD = 120000; // 2 นาที (120,000 มิลลิวินาที)
+        
+        // 1. ตรวจสอบจาก sessionStorage ของแท็บปัจจุบัน (Admin เอง)
+        try {
+          const currentUser = sessionStorage.getItem('restaurant_current_user');
+          if (currentUser) {
+            const user = JSON.parse(currentUser);
+            if (user.username === username) {
+              console.log(`✅ ${username} is online (current tab)`);
+              return true;
+            }
+          }
+        } catch (e) {
+          console.error('Error checking sessionStorage:', e);
+        }
+        
+        // 2. ตรวจสอบจาก online_users list (แท็บอื่นในเบราว์เซอร์เดียวกัน)
+        try {
+          const onlineUsers = JSON.parse(localStorage.getItem('online_users') || '[]');
+          const userOnline = onlineUsers.find(u => u.username === username);
+          
+          if (userOnline) {
+            const timeSinceActive = now - userOnline.lastActive;
+            if (timeSinceActive < ONLINE_THRESHOLD) {
+              console.log(`✅ ${username} is online (online_users: ${Math.floor(timeSinceActive/1000)}s ago)`);
+              return true;
+            }
+          }
+        } catch (e) {
+          console.error('Error checking online_users:', e);
+        }
+        
+        // 3. ตรวจสอบจาก last_login (สำหรับเบราว์เซอร์อื่นหรือแท็บที่ยังไม่ได้ปิด)
+        try {
+          const lastLoginTime = localStorage.getItem(`last_login_${username}`);
+          if (lastLoginTime) {
+            const timeSinceLogin = now - parseInt(lastLoginTime);
+            if (timeSinceLogin < ONLINE_THRESHOLD) {
+              console.log(`✅ ${username} is online (last_login: ${Math.floor(timeSinceLogin/1000)}s ago)`);
+              return true;
+            }
+          }
+        } catch (e) {
+          console.error('Error checking last_login:', e);
+        }
+        
+        // 4. ตรวจสอบจาก Google Sheets (สำหรับเบราว์เซอร์อื่น)
+        try {
+          const sheetsOnlineUsers = window.sheetsOnlineUsers || [];
+          const userInSheets = sheetsOnlineUsers.find(u => u.username === username);
+          
+          if (userInSheets && userInSheets.isOnline) {
+            console.log(`✅ ${username} is online (Google Sheets)`);
+            return true;
+          }
+        } catch (e) {
+          console.error('Error checking Sheets:', e);
+        }
+        
+        console.log(`⚪ ${username} is offline`);
+        return false;
+      }
+      
+      // ฟังก์ชันดึงข้อมูล online users จาก Google Sheets
+      async function fetchOnlineUsersFromSheets() {
+        if (!WEB_APP_URL || WEB_APP_URL.includes('REPLACE_WITH_YOUR_WEB_APP_URL')) {
+          console.log('⚠️ WEB_APP_URL not configured');
+          return;
+        }
+        
+        try {
+          const response = await fetch(WEB_APP_URL + '?action=getOnlineUsers');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success') {
+              window.sheetsOnlineUsers = data.users || [];
+              console.log(`✅ Fetched ${window.sheetsOnlineUsers.length} online users from Sheets`);
+            }
+          }
+        } catch (error) {
+          console.log('Could not fetch from Sheets (optional):', error.message);
+        }
+      }
+      
+      // ทำให้เป็น global function
+      window.fetchOnlineUsersFromSheets = fetchOnlineUsersFromSheets;
+      
+      // ฟังก์ชันดึงเวลา login ล่าสุด
+      function getLastLoginTime(username) {
+        const lastLoginTime = localStorage.getItem(`last_login_${username}`);
+        if (lastLoginTime) {
+          const date = new Date(parseInt(lastLoginTime));
+          return date.toLocaleString('th-TH');
+        }
+        return 'ไม่เคย login';
+      }
+
+      // ฟังก์ชันอัปเดตสถิติผู้ใช้
+      function updateUserStats() {
+        const users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        const adminCount = users.filter(u => u.role === 'admin').length;
+        const staffCount = users.filter(u => u.role === 'staff').length;
+        
+        document.getElementById('totalUsers').textContent = users.length;
+        document.getElementById('adminCount').textContent = adminCount;
+        document.getElementById('staffCount').textContent = staffCount;
+      }
+      
+      // Debug Panel ถูกลบออกแล้ว - ฟังก์ชันนี้ไม่ใช้งานอีกต่อไป
+      window.toggleDebugPanel = function() {
+        console.log('Debug Panel has been removed');
+      };
+      
+      // Debug Panel ถูกลบออกแล้ว - ฟังก์ชันนี้ไม่ใช้งานอีกต่อไป
+      function updateDebugPanel() {
+        return; // ไม่ทำอะไร
+        const display = document.getElementById('debugStatusDisplay');
+        if (!display) return;
+        
+        const now = Date.now();
+        const ONLINE_THRESHOLD = 120000; // 2 นาที
+        let html = '';
+
+        // 1. ตรวจสอบ sessionStorage
+        const currentUser = sessionStorage.getItem('restaurant_current_user');
+        html += `
+          <div class="bg-gray-800 rounded-lg p-4 border-2 border-blue-500">
+            <h4 class="font-bold mb-2 text-blue-300">1️⃣ sessionStorage (แท็บปัจจุบัน)</h4>
+            <pre class="text-sm bg-gray-950 p-3 rounded overflow-auto">${currentUser || 'ไม่มีข้อมูล'}</pre>
+          </div>
+        `;
+
+        // 2. ตรวจสอบ online_users
+        const onlineUsers = localStorage.getItem('online_users');
+        let onlineUsersData = [];
+        try {
+          onlineUsersData = JSON.parse(onlineUsers || '[]');
+        } catch(e) {}
+        
+        let onlineUsersHtml = '<div class="space-y-2">';
+        if (onlineUsersData.length === 0) {
+          onlineUsersHtml += '<p class="text-gray-400 text-sm">ไม่มีผู้ใช้ online</p>';
+        } else {
+          onlineUsersData.forEach(u => {
+            const timeSinceActive = now - u.lastActive;
+            const isOnline = timeSinceActive < ONLINE_THRESHOLD;
+            const seconds = Math.floor(timeSinceActive / 1000);
+            onlineUsersHtml += `
+              <div class="bg-gray-950 p-3 rounded flex items-center justify-between">
+                <span class="font-medium">${u.username} <span class="text-gray-400 text-xs">(${u.role})</span></span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400">${seconds}s ago</span>
+                  <span class="px-2 py-1 rounded text-xs ${isOnline ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}">
+                    ${isOnline ? '🟢 Online' : '⚪ Offline'}
+                  </span>
+                </div>
+              </div>
+            `;
+          });
+        }
+        onlineUsersHtml += '</div>';
+        
+        html += `
+          <div class="bg-gray-800 rounded-lg p-4 border-2 border-green-500">
+            <h4 class="font-bold mb-2 text-green-300">2️⃣ online_users (localStorage)</h4>
+            ${onlineUsersHtml}
+          </div>
+        `;
+
+        // 3. ตรวจสอบ last_login
+        const users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        let lastLoginHtml = '<div class="space-y-2">';
+        users.forEach(user => {
+          const username = user.username;
+          const lastLogin = localStorage.getItem(`last_login_${username}`);
+          if (lastLogin) {
+            const date = new Date(parseInt(lastLogin));
+            const timeDiff = now - parseInt(lastLogin);
+            const seconds = Math.floor(timeDiff / 1000);
+            const minutes = Math.floor(timeDiff / 60000);
+            const isOnline = timeDiff < ONLINE_THRESHOLD;
+            
+            lastLoginHtml += `
+              <div class="bg-gray-950 p-3 rounded flex items-center justify-between">
+                <div>
+                  <span class="font-medium">${username}</span>
+                  <span class="text-xs text-gray-400 ml-2">${date.toLocaleString('th-TH')}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400">${seconds}s (${minutes}m)</span>
+                  <span class="px-2 py-1 rounded text-xs ${isOnline ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}">
+                    ${isOnline ? '🟢 Online' : '⚪ Offline'}
+                  </span>
+                </div>
+              </div>
+            `;
+          } else {
+            lastLoginHtml += `
+              <div class="bg-gray-950 p-3 rounded flex items-center justify-between">
+                <span class="font-medium">${username}</span>
+                <span class="text-xs text-gray-400">ไม่เคย login</span>
+              </div>
+            `;
+          }
+        });
+        lastLoginHtml += '</div>';
+
+        html += `
+          <div class="bg-gray-800 rounded-lg p-4 border-2 border-yellow-500">
+            <h4 class="font-bold mb-2 text-yellow-300">3️⃣ last_login_* (localStorage)</h4>
+            ${lastLoginHtml}
+          </div>
+        `;
+        
+        // 4. ตรวจสอบ Google Sheets
+        const sheetsOnlineUsers = window.sheetsOnlineUsers || [];
+        let sheetsHtml = '<div class="space-y-2">';
+        if (sheetsOnlineUsers.length === 0) {
+          sheetsHtml += '<p class="text-gray-400 text-sm">ไม่มีข้อมูลจาก Sheets (หรือยังไม่ได้ตั้งค่า)</p>';
+        } else {
+          sheetsOnlineUsers.forEach(u => {
+            const timeSinceActive = now - u.lastActive;
+            const seconds = Math.floor(timeSinceActive / 1000);
+            const minutes = Math.floor(timeSinceActive / 60000);
+            const isOnline = u.isOnline;
+            
+            sheetsHtml += `
+              <div class="bg-gray-950 p-3 rounded flex items-center justify-between">
+                <div>
+                  <span class="font-medium">${u.username}</span>
+                  <span class="text-xs text-gray-400 ml-2">(${u.role})</span>
+                  <span class="text-xs text-gray-500 ml-2">Browser: ${u.browser.substring(0, 15)}...</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400">${seconds}s (${minutes}m)</span>
+                  <span class="px-2 py-1 rounded text-xs ${isOnline ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}">
+                    ${isOnline ? '🟢 Online' : '⚪ Offline'}
+                  </span>
+                </div>
+              </div>
+            `;
+          });
+        }
+        sheetsHtml += '</div>';
+        
+        html += `
+          <div class="bg-gray-800 rounded-lg p-4 border-2 border-purple-500">
+            <h4 class="font-bold mb-2 text-purple-300">4️⃣ Google Sheets (ข้ามเบราว์เซอร์)</h4>
+            <p class="text-xs text-gray-400 mb-2">อัปเดตทุก 10 วินาที | ใช้สำหรับเช็คข้ามเบราว์เซอร์</p>
+            ${sheetsHtml}
+          </div>
+        `;
+
+        display.innerHTML = html;
+      }
+
+      // ฟังก์ชันโหลดและแสดงรายการผู้ใช้
+      function loadUsers() {
+        const users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        
+        // อัปเดตสถิติ
+        updateUserStats();
+        
+        // แสดงรายการผู้ใช้
+        usersList.innerHTML = users.map(user => {
+          const stats = calculateUserStats(user.username);
+          const isOnline = isUserOnline(user.username);
+          
+          return `
+          <div class="bg-gray-50 p-4 rounded-lg flex flex-col border-2 ${isOnline ? 'border-green-300' : 'border-gray-200'}">
+            <div class="flex justify-between items-center mb-3">
+              <div class="flex-1">
+                <h4 class="font-medium text-lg">${user.role === 'admin' ? '👑 ผู้ดูแลระบบ' : '👤 พนักงาน'} (${user.username})</h4>
+                <p class="text-sm text-gray-500 mt-1">รหัสผ่าน: ${user.password}</p>
+                <div class="mt-2 flex gap-2 flex-wrap">
+                  <span class="px-3 py-1 ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'} rounded-full text-sm font-medium">
+                    ${user.role === 'admin' ? 'Admin' : 'Staff'}
+                  </span>
+                  ${stats.totalOrders > 0 ? `
+                    <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      📦 ${stats.totalOrders} ออเดอร์
+                    </span>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                      💰 ${stats.totalAmount.toFixed(0)} บาท
+                    </span>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="px-3 py-1 ${isOnline ? 'bg-green-100 text-green-800 animate-pulse' : 'bg-gray-100 text-gray-500'} rounded-full text-sm font-medium block mb-2">
+                  ${isOnline ? '🟢 Online' : '⚪ Offline'}
+                </span>
+                <p class="text-xs text-gray-500">Login ล่าสุด:</p>
+                <p class="text-xs text-gray-600 font-medium">${getLastLoginTime(user.username)}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="viewUserHistory('${user.username}')" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                ดูประวัติ
+              </button>
+              <button onclick="testLogin('${user.username}', '${user.password}', '${user.role}')" 
+                      class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                ทดสอบ
+              </button>
+              <button onclick="editUserPassword('${user.username}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                </svg>
+                แก้ไข
+              </button>
+              <button onclick="changeUserRole('${user.username}', '${user.role}')" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+                สิทธิ์
+              </button>
+              <button onclick="deleteUser('${user.username}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                ลบ
+              </button>
+            </div>
+          </div>
+        `;
+        }).join('');
+      }
+      
+      // ระบบอัปเดต Real-time
+      let autoRefreshInterval = null;
+      let sheetsRefreshInterval = null;
+      
+      function startRealTimeUpdates() {
+        // หยุด interval เก่า (ถ้ามี)
+        if (autoRefreshInterval) {
+          clearInterval(autoRefreshInterval);
+        }
+        if (sheetsRefreshInterval) {
+          clearInterval(sheetsRefreshInterval);
+        }
+        
+        console.log('🚀 Starting real-time updates...');
+        
+        // อัปเดตทันที
+        fetchOnlineUsersFromSheets().then(() => loadUsers());
+        
+        // อัปเดตทุก 3 วินาที (เพิ่มจาก 2 เป็น 3 เพื่อลด load)
+        autoRefreshInterval = setInterval(() => {
+          // ตรวจสอบว่าอยู่ในหน้า users หรือไม่
+          const usersSection = document.getElementById('usersSection');
+          if (usersSection && !usersSection.classList.contains('hidden')) {
+            console.log('🔄 Auto-refreshing user list...');
+            // ดึงข้อมูลจาก Sheets ก่อน แล้วค่อย loadUsers
+            fetchOnlineUsersFromSheets().then(() => loadUsers());
+          } else {
+            console.log('⏸️ Users section hidden, skipping refresh');
+          }
+        }, 3000);
+        
+        // ดึงข้อมูลจาก Sheets ทุก 10 วินาที (ช้ากว่าเพราะเป็น API call) - ทำงานแม้ไม่ได้เปิดหน้า users
+        sheetsRefreshInterval = setInterval(() => {
+          console.log('🔄 Background: Fetching from Sheets...');
+          fetchOnlineUsersFromSheets();
+        }, 10000);
+      }
+      
+      function stopRealTimeUpdates() {
+        if (autoRefreshInterval) {
+          console.log('⏹️ Stopping real-time updates');
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+        }
+        if (sheetsRefreshInterval) {
+          clearInterval(sheetsRefreshInterval);
+          sheetsRefreshInterval = null;
+        }
+      }
+      
+      // เพิ่มฟังก์ชันให้เป็น global เพื่อให้ showSection เรียกใช้ได้
+      window.startRealTimeUpdates = startRealTimeUpdates;
+      window.stopRealTimeUpdates = stopRealTimeUpdates;
+      window.loadUsers = loadUsers;
+
+      // เพิ่ม event listener สำหรับการเพิ่มผู้ใช้
+      addUserForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('newUsername').value.trim();
+        const password = document.getElementById('newPassword').value.trim();
+        const roleInputs = document.getElementsByName('newRole');
+        let role = '';
+        
+        for (const input of roleInputs) {
+          if (input.checked) {
+            role = input.value;
+            break;
+          }
+        }
+
+        if (!username || !password || !role) {
+          alert('❌ กรุณากรอกข้อมูลให้ครบ');
+          return;
+        }
+
+        // ตรวจสอบความยาวของชื่อผู้ใช้และรหัสผ่าน
+        if (username.length < 3) {
+          alert('❌ ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร');
+          return;
+        }
+
+        if (password.length < 3) {
+          alert('❌ รหัสผ่านต้องมีอย่างน้อย 3 ตัวอักษร');
+          return;
+        }
+
+        // ดึงข้อมูลผู้ใช้ปัจจุบัน
+        const users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        
+        // ตรวจสอบว่ามีชื่อผู้ใช้ซ้ำหรือไม่
+        if (users.some(u => u.username === username)) {
+          alert('❌ มีชื่อผู้ใช้นี้ในระบบแล้ว');
+          return;
+        }
+
+        // เพิ่มผู้ใช้ใหม่
+        users.push({ username, password, role });
+        localStorage.setItem('restaurant_users', JSON.stringify(users));
+        
+        const roleText = role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงาน';
+        alert(`✅ เพิ่มผู้ใช้ "${username}" (${roleText}) สำเร็จ`);
+        this.reset();
+        loadUsers();
+      });
+
+      // โหลดรายการผู้ใช้เมื่อเริ่มต้น
+      loadUsers();
+
+      // เพิ่มฟังก์ชันสำหรับแก้ไขรหัสผ่าน
+      window.editUserPassword = function(username) {
+        const newPassword = prompt('ใส่รหัสผ่านใหม่:');
+        if (!newPassword) return;
+
+        const users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        const userIndex = users.findIndex(u => u.username === username);
+        
+        if (userIndex !== -1) {
+          users[userIndex].password = newPassword;
+          localStorage.setItem('restaurant_users', JSON.stringify(users));
+          alert('อัพเดทรหัสผ่านสำเร็จ');
+          loadUsers(); // รีเฟรชรายการ
+        }
+      };
+
+      // ฟังก์ชันแสดงประวัติการสั่งอาหารของ Staff
+      window.viewUserHistory = function(username) {
+        const orders = getUserOrderHistory(username);
+        const stats = calculateUserStats(username);
+        
+        if (orders.length === 0) {
+          alert(`ผู้ใช้ "${username}" ยังไม่มีประวัติการสั่งอาหาร`);
+          return;
+        }
+        
+        // สร้าง Modal แสดงประวัติ
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.onclick = function(e) {
+          if (e.target === modal) modal.remove();
+        };
+        
+        let ordersHTML = orders.map((order, index) => {
+          let itemsHTML = '';
+          if (order.items && Array.isArray(order.items)) {
+            itemsHTML = order.items.map(item => {
+              const sizeText = item.size ? ` (${item.size})` : '';
+              return `<li class="text-gray-700">${item.name}${sizeText} x${item.qty} = ${item.price * item.qty} บาท</li>`;
+            }).join('');
+          }
+          
+          return `
+            <div class="bg-gray-50 p-4 rounded-lg mb-3">
+              <div class="flex justify-between items-start mb-2">
+                <p class="font-semibold text-gray-800">ออเดอร์ #${index + 1}</p>
+                <span class="text-sm text-gray-500">${order.timestamp || 'ไม่ระบุเวลา'}</span>
+              </div>
+              <ul class="ml-4 list-disc mb-2">${itemsHTML}</ul>
+              <p class="font-bold text-green-600">รวม: ${order.total} บาท</p>
+            </div>
+          `;
+        }).join('');
+        
+        modal.innerHTML = `
+          <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6">
+              <div class="flex justify-between items-center">
+                <div>
+                  <h2 class="text-2xl font-bold mb-2">📊 ประวัติการสั่งอาหาร</h2>
+                  <p class="text-lg">ผู้ใช้: <strong>${username}</strong></p>
+                </div>
+                <button onclick="this.closest('.fixed').remove()" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="p-6 bg-gray-100">
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-white p-4 rounded-lg shadow">
+                  <p class="text-sm text-gray-600">จำนวนออเดอร์ทั้งหมด</p>
+                  <p class="text-3xl font-bold text-indigo-600">${stats.totalOrders}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                  <p class="text-sm text-gray-600">ยอดรวมทั้งหมด</p>
+                  <p class="text-3xl font-bold text-green-600">${stats.totalAmount.toFixed(0)} ฿</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6">
+              <h3 class="text-lg font-semibold mb-4">รายการออเดอร์ทั้งหมด:</h3>
+              ${ordersHTML}
+            </div>
+            
+            <div class="p-4 bg-gray-100 border-t flex justify-between items-center">
+              <button onclick="openGoogleSheets()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                เปิด Google Sheets
+              </button>
+              <div class="flex gap-2">
+                <button onclick="exportUserHistory('${username}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  ส่งออก CSV
+                </button>
+                <button onclick="this.closest('.fixed').remove()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                  ปิด
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+      };
+      
+      // ฟังก์ชันส่งออกประวัติเป็น CSV
+      window.exportUserHistory = function(username) {
+        const orders = getUserOrderHistory(username);
+        if (orders.length === 0) {
+          alert('ไม่มีข้อมูลให้ส่งออก');
+          return;
+        }
+        
+        let csv = 'ลำดับ,วันที่-เวลา,รายการ,จำนวน,ราคา,ยอดรวม\n';
+        
+        orders.forEach((order, index) => {
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+              const sizeText = item.size ? ` (${item.size})` : '';
+              csv += `${index + 1},"${order.timestamp || ''}","${item.name}${sizeText}",${item.qty},${item.price},${item.price * item.qty}\n`;
+            });
+          }
+        });
+        
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `ประวัติ_${username}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        
+        alert('ส่งออกข้อมูลสำเร็จ!');
+      };
+
+      // เพิ่มฟังก์ชันสำหรับเปลี่ยนสิทธิ์ผู้ใช้
+      window.changeUserRole = function(username, currentRole) {
+        const users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        const user = users.find(u => u.username === username);
+        
+        if (!user) {
+          alert('ไม่พบผู้ใช้นี้');
+          return;
+        }
+
+        // ตรวจสอบว่าเป็น admin คนสุดท้ายหรือไม่
+        if (currentRole === 'admin') {
+          const adminCount = users.filter(u => u.role === 'admin').length;
+          if (adminCount <= 1) {
+            alert('⚠️ ไม่สามารถเปลี่ยนสิทธิ์ผู้ดูแลระบบคนสุดท้ายได้');
+            return;
+          }
+        }
+
+        const newRole = currentRole === 'admin' ? 'staff' : 'admin';
+        const roleText = newRole === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงาน';
+        
+        if (!confirm(`ต้องการเปลี่ยนสิทธิ์ของ "${username}" เป็น "${roleText}" ใช่หรือไม่?`)) {
+          return;
+        }
+
+        // อัปเดตสิทธิ์
+        const userIndex = users.findIndex(u => u.username === username);
+        users[userIndex].role = newRole;
+        localStorage.setItem('restaurant_users', JSON.stringify(users));
+        
+        alert(`✅ เปลี่ยนสิทธิ์เป็น "${roleText}" สำเร็จ`);
+        loadUsers(); // รีเฟรชรายการ
+      };
+
+      // เพิ่มฟังก์ชันสำหรับลบผู้ใช้
+      window.deleteUser = function(username) {
+        if (!confirm('ยืนยันการลบผู้ใช้?')) return;
+
+        let users = JSON.parse(localStorage.getItem('restaurant_users') || '[]');
+        
+        // ห้ามลบถ้าเป็น admin คนเดียว
+        const remainingAdmins = users.filter(u => u.role === 'admin' && u.username !== username);
+        if (users.find(u => u.username === username)?.role === 'admin' && remainingAdmins.length === 0) {
+          alert('ไม่สามารถลบผู้ดูแลระบบคนสุดท้ายได้');
+          return;
+        }
+
+        users = users.filter(u => u.username !== username);
+        localStorage.setItem('restaurant_users', JSON.stringify(users));
+        loadUsers();
+        alert('ลบผู้ใช้สำเร็จ');
+      };
+    }
+
+      // ฟังก์ชันทดสอบการเข้าสู่ระบบ
+    window.testLogin = function(username, password, role) {
+      // ล้างข้อมูล redirect และ session เก่า
+      sessionStorage.clear();
+        sessionStorage.removeItem('restaurant_current_user');
+      
+      // เปิดหน้าใหม่แบบ popup window
+      const testWindow = window.open('index.html', 'testLogin', 
+        'width=500,height=600,resizable=yes,scrollbars=yes,status=yes');
+      
+      if (!testWindow) {
+        alert('กรุณาอนุญาต popup window');
+        return;
+      }
+      
+      testWindow.onload = function() {
+        try {
+          testWindow.document.getElementById('username').value = username;
+          testWindow.document.getElementById('password').value = password;
+          const roleInput = testWindow.document.querySelector(`input[name="role"][value="${role}"]`);
+          if (roleInput) roleInput.checked = true;
+        } catch (e) {
+          console.error('Error setting login form values:', e);
+        }
+      };
+    };
+
+    // เรียกใช้งานการจัดการผู้ใช้
+    window.addEventListener('load', function() {
+      initializeUserManagement();
+      
+      // อัปเดตสถานะ online ของ admin เอง
+      updateAdminOnlineStatus();
+      setInterval(updateAdminOnlineStatus, 10000); // อัปเดตทุก 10 วินาที
+      
+      // เริ่ม real-time updates ทันทีเมื่อโหลดหน้า (เพื่อดึงข้อมูลจาก Sheets)
+      console.log('🚀 Starting background Sheets sync...');
+      fetchOnlineUsersFromSheets(); // ดึงข้อมูลทันที
+      setInterval(() => {
+        console.log('🔄 Background: Fetching from Sheets...');
+        fetchOnlineUsersFromSheets();
+      }, 10000); // ดึงข้อมูลทุก 10 วินาที
+    });
+    
+    // ฟังก์ชันอัปเดตสถานะ online ของ Admin
+    async function updateAdminOnlineStatus() {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        const now = Date.now();
+        
+        // อัปเดต last_login
+        localStorage.setItem(`last_login_${currentUser.username}`, now.toString());
+        
+        // อัปเดต online_users
+        const onlineUsers = JSON.parse(localStorage.getItem('online_users') || '[]');
+        const filteredUsers = onlineUsers.filter(u => u.username !== currentUser.username);
+        filteredUsers.push({
+          username: currentUser.username,
+          role: currentUser.role,
+          lastActive: now,
+          loginTime: onlineUsers.find(u => u.username === currentUser.username)?.loginTime || now
+        });
+        
+        // ลบ user ที่ offline เกิน 2 นาที
+        const activeUsers = filteredUsers.filter(u => (now - u.lastActive) < 120000);
+        localStorage.setItem('online_users', JSON.stringify(activeUsers));
+        
+        console.log(`🔄 Admin status updated: ${currentUser.username}`);
+        
+        // ส่งสถานะไปยัง Google Sheets (ปิดชั่วคราวเพราะ CORS issue บน localhost)
+        // Uncomment เมื่อ deploy ขึ้น web server จริง
+        /*
+        if (WEB_APP_URL && !WEB_APP_URL.includes('REPLACE_WITH_YOUR_WEB_APP_URL')) {
+          try {
+            let browserId = localStorage.getItem('browser_id');
+            if (!browserId) {
+              browserId = 'browser_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+              localStorage.setItem('browser_id', browserId);
+            }
+            
+            const response = await fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'updateOnlineStatus',
+                username: currentUser.username,
+                role: currentUser.role,
+                browser: browserId
+              })
+            });
+            
+            if (response.ok) {
+              console.log(`✅ Synced admin status to Sheets: ${currentUser.username}`);
+            }
+          } catch (error) {
+            console.log('Could not sync admin to Sheets:', error.message);
+          }
+        }
+        */
+      }
+    }
+    
+    // ========== Real-time Status Updates ==========
+    
+    // ฟังการเปลี่ยนแปลงของ localStorage (เมื่อมี user login/logout)
+    window.addEventListener('storage', function(e) {
+      // ตรวจสอบว่ามีการเปลี่ยนแปลง online_users หรือ last_login
+      if (e.key && (e.key === 'online_users' || e.key.startsWith('last_login_'))) {
+        console.log('🔔 ตรวจพบการเปลี่ยนแปลงสถานะผู้ใช้');
+        
+        // อัปเดตรายการผู้ใช้ทันที
+        const usersSection = document.getElementById('usersSection');
+        if (usersSection && !usersSection.classList.contains('hidden')) {
+          loadUsers();
+          
+          // แสดง notification
+          showStatusNotification('มีการเปลี่ยนแปลงสถานะผู้ใช้');
+        }
+      }
+    });
+    
+    // ฟังก์ชันแสดง notification
+    function showStatusNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>${message}</span>
+        </div>
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 2000);
+    }
+    
+    // เพิ่ม CSS สำหรับ animation
+    const realtimeStyle = document.createElement('style');
+    realtimeStyle.textContent = `
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out;
+      }
+    `;
+    document.head.appendChild(realtimeStyle);
+
+    // ฟังก์ชัน editUser และ deleteUser ถูกย้ายไปอยู่ใน initializeUserManagement แล้ว
+    // (ลบโค้ดเก่าที่ซ้ำซ้อน)
+
+    // ---------- ประวัติออเดอร์ ----------
+    function renderHistory(){
+      const historyContainer = document.getElementById("historyContainer");
+      historyContainer.innerHTML = "";
+      if(completedOrders.length === 0){
+        historyContainer.innerHTML = `<p class="text-gray-500">ยังไม่มีออเดอร์ที่จบแล้ว</p>`;
+        return;
+      }
+
+      completedOrders.forEach((order, index) => {
+        let itemsHtml = "";
+        order.items.forEach(item => {
+          const sizeText = item.size ? ` (${item.size})` : "";
+          itemsHtml += `<li>${item.name}${sizeText} x${item.qty} = ${item.price * item.qty} บาท</li>`;
+        });
+        historyContainer.innerHTML += `
+        <div class="border-b pb-2 mb-2">
+          <p class="font-semibold">🧾 ออเดอร์ #${index + 1} - ${order.timestamp}</p>
+          <ul class="ml-4 list-disc">${itemsHtml}</ul>
+          <p class="font-bold mt-1">รวม: ${order.total} บาท</p>
+        </div>
+      `;
+    });
+  }
+
+    // ---------- Sidebar + Logout ----------
+  // use logout() from auth.js which clears current user and redirects
+    function toggleSidebar(){
+      const sidebar=document.getElementById("sidebar");
+      sidebar.classList.toggle("sidebar-collapsed");
+      sidebar.classList.toggle("w-16");
+      sidebar.classList.toggle("w-64");
+      if(sidebar.classList.contains("w-16")){
+        orderSummary.style.left="4rem"; orderSummary.style.width="calc(100% - 4rem)";
+      } else {
+        orderSummary.style.left="16rem"; orderSummary.style.width="calc(100% - 16rem)";
+      }
+    }
+    function showSection(section){
+      // หยุด real-time updates ของหน้าเก่า
+      if (typeof stopRealTimeUpdates === 'function') {
+        stopRealTimeUpdates();
+      }
+      
+      // ซ่อนทุก section
+      document.getElementById("menuSection").classList.add("hidden");
+      document.getElementById("orderSection").classList.add("hidden");
+      document.getElementById("reportSection").classList.add("hidden");
+      document.getElementById("historySection").classList.add("hidden");
+      document.getElementById("usersSection").classList.add("hidden");
+      
+      // แสดง section ที่เลือก
+      if(section==="menu") document.getElementById("menuSection").classList.remove("hidden");
+      if(section==="order") document.getElementById("orderSection").classList.remove("hidden");
+      if(section==="report") document.getElementById("reportSection").classList.remove("hidden");
+      if(section==="history"){ 
+        document.getElementById("historySection").classList.remove("hidden");
+        renderHistory(); // แสดงข้อมูลประวัติ
+      }
+      if(section==="users") {
+        console.log('Showing users section');
+        document.getElementById("usersSection").classList.remove("hidden");
+        if(typeof loadUsers === 'function') {
+          console.log('loadUsers function exists, calling it');
+          loadUsers();
+          
+          // เริ่ม real-time updates
+          if (typeof startRealTimeUpdates === 'function') {
+            startRealTimeUpdates();
+            console.log('✅ เริ่ม Real-time updates');
+          }
+        } else {
+          console.error('loadUsers function not found! Check if auth.js is loaded correctly');
+        }
+        // เช็คว่ามีข้อมูลผู้ใช้หรือไม่
+        const users = getUsers();
+        console.log('Current users:', users);
+      }
+    }
+    updateReport();
+  </script>
+</body>
+</html>
